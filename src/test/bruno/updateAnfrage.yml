@@ -5,13 +5,14 @@ info:
 
 http:
   method: PUT
-  url: http://localhost:8081/api/anfrage/2
+  url: http://localhost:8081/api/anfrage/1
   body:
     type: json
     data: |-
       {
       "kategorie" : "D",
-      "kunde" : "Felix Muster UPDATED",
+      "kunde" : "Max Muster UPDATED",
+      "status" : "IN_PRUEFUNG",
       "beschreibung" : "Mein Glas ist kaputt.",
       "fragen" : "Wie kann ich das Problem beheben? Was kostet die Reparatur? Wie lange dauert die Reparatur?",
       "bildUrl" : "https://example.com/images/smartphone.jpg"
