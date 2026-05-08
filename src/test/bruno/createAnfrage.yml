@@ -1,17 +1,21 @@
 info:
-  name: createProduct
+  name: createAnfrage
   type: http
   seq: 1
 
 http:
   method: POST
-  url: http://localhost:8081/api/product
+  url: http://localhost:8081/api/anfrage
   body:
     type: json
     data: |-
       {
-        "title": "Bratsche",
-        "description": "macht bratsch"
+      "id" : 3,
+      "kategorie" : "C",
+      "kunde" : "Felix Muster",
+      "beschreibung" : "Mein Glas ist kaputt.",
+      "fragen" : "Wie kann ich das Problem beheben? Was kostet die Reparatur? Wie lange dauert die Reparatur?",
+      "bildUrl" : "https://example.com/images/smartphone.jpg",
       }
   auth: inherit
 

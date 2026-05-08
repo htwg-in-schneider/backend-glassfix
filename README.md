@@ -25,4 +25,16 @@ The application will start on `http://localhost:8081`.
 - REST-Controller `AnfrageController` supporting GET and POST requests to `/api/anfrage`
 - using Java Objects instead of strings
 - test GET with using `curl`: `curl http://localhost:8081/api/anfrage`
-- test POST with `curl -X POST http://localhost:8081/api/anfrage -H 'Content-Type: application/json' -d '{"id":3,"beschreibung":"Anfrage 3", "kunde": "Kunde 3", "BildUrl": "https://example.com/image3.jpg"}'` or in bruno
+- test POST with `curl -X POST http://localhost:8081/api/anfrage -H 'Content-Type: application/json' -d '{"id" : 3,
+  "kategorie" : "C",
+  "kunde" : "Felix Muster",
+  "beschreibung" : "Mein Glas ist kaputt.",
+  "fragen" : "Wie kann ich das Problem beheben? Was kostet die Reparatur? Wie lange dauert die Reparatur?",
+  "bildUrl" : "https://example.com/images/example3.jpg"
+}'` or in bruno
+
+### Iteration 1c: REST-Controller with model class
+
+- introduced model classes `Anfrage` and `AnfrageStatus`
+- `AnfrageController` returns some example data that can be consumed by the frontend
+
