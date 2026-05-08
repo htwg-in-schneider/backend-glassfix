@@ -1,17 +1,17 @@
 info:
-  name: createAnfrage
+  name: updateAnfrage
   type: http
-  seq: 1
+  seq: 3
 
 http:
-  method: POST
-  url: http://localhost:8081/api/anfrage
+  method: PUT
+  url: http://localhost:8081/api/anfrage/2
   body:
     type: json
     data: |-
       {
-      "kategorie" : "C",
-      "kunde" : "Felix Muster",
+      "kategorie" : "D",
+      "kunde" : "Felix Muster UPDATED",
       "beschreibung" : "Mein Glas ist kaputt.",
       "fragen" : "Wie kann ich das Problem beheben? Was kostet die Reparatur? Wie lange dauert die Reparatur?",
       "bildUrl" : "https://example.com/images/smartphone.jpg"

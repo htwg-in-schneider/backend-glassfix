@@ -58,3 +58,16 @@ In this iteration, the application was updated to integrate with a database. The
    - `config.DataLoader` is a CommandLineRunner that is run during application startup and used to fill initial data into the database. It is only run when no `Anfrage` are defined yet.
 5. **Anfrage Controller**:
    - Updated the `/api/anfrage` endpoint to fetch `Anfrage` from the database instead of returning hardcoded values.
+
+### Iteration 4: CRUD for Anfrage
+
+In this iteration the backend was extended to support full CRUD operations for `Anfrage`.
+
+- CRUD Endpoints (REST)
+  - GET /api/anfrage — list all `Anfrage`
+  - GET /api/anfrage/{id} — fetch a single product (404 if not found)
+  - POST /api/anfrage — create a `Anfrage` (returns 201)
+  - PUT /api/anfrage/{id} — update an existing `Anfrage` (404 if not found)
+  - DELETE /api/anfrage/{id} — delete a `Anfrage` (204 on success, 404 if not found)
+- No Validation: Entities are not validated before written to the database!
+- Example request to be used in bruno were added to `src/test/bruno`
