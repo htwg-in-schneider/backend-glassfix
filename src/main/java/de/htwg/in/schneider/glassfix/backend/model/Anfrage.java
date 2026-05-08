@@ -1,28 +1,61 @@
 package de.htwg.in.schneider.glassfix.backend.model;
 
-public class Anfrage {
-    private int id;
-    private String kategorie;
-    private String kunde;
-    private String experte;
-    private AnfrageStatus status;
-    private String erstellungsdatum;
-    private String beschreibung;
-    private String fragen;
-    private String bildUrl;
-    private String antwort;
+import org.hibernate.annotations.CreationTimestamp;
 
-    public Anfrage() {
-        erstellungsdatum = java.time.LocalDate.now().toString();
-        status = AnfrageStatus.ERSTELLT;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+
+@Entity
+public class Anfrage {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @Column(nullable = false)
+    private String kategorie;
+
+    @Column(nullable = false)
+    private String kunde;
+
+    private String experte;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AnfrageStatus status;
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = AnfrageStatus.ERSTELLT;
+        }
     }
 
+    @CreationTimestamp
+    @Column(name= "erstellungsdatum", updatable = false, nullable = false)
+    private String erstellungsdatum;
+
+    private String beschreibung;
+    
+    private String fragen;
+    
+    private String bildUrl;
+    
+    private String antwort;
+
+
+
     // Getter und Setter
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -112,6 +145,19 @@ public class Anfrage {
                 ", bildUrl=" + bildUrl +
                 ", antwort=" + antwort +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Anfrage anfrage = (Anfrage) o;
+        return id != null && id.equals(anfrage.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 
 
