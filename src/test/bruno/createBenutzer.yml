@@ -10,11 +10,11 @@ http:
     type: json
     data: |-
       {
-      "benutzername" : "MaxMuster",
-      "email" : "max.muster@example.com",
+      "benutzername" : "MaxMuster2",
+      "email" : "max.muster2@example.com",
       "hashpasswort" : "passwort123",
       "rolle" : "KUNDE",
-      "adresse" : "Musterstraße 1, 12345 Musterstadt",
+      "adresse" : "Musterstraße 3, 12345 Musterstadt",
       "telefonnummer" : "0123456789"
       }
   auth: inherit

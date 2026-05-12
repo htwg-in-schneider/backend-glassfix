@@ -7,18 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.web.bind.annotation.*;
 
 import de.htwg.in.schneider.glassfix.backend.model.Rolle;
 import de.htwg.in.schneider.glassfix.backend.model.Benutzer;
 import de.htwg.in.schneider.glassfix.backend.model.Anfrage;
+import de.htwg.in.schneider.glassfix.backend.model.AnfrageStatus;
 import de.htwg.in.schneider.glassfix.backend.repository.AnfrageRepository;
 import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
 
@@ -35,11 +30,40 @@ public class AnfrageController {
     private BenutzerRepository benutzerRepository;
 
     @GetMapping
-    public List<Anfrage> getAllAnfragen() {
-        LOG.info("Fetching all anfragen");
-        List<Anfrage> anfragen = anfrageRepository.findAll();
-        LOG.info("Found {} anfragen", anfragen != null ? anfragen.size() : 0);
-        return anfragen;
+    public List<Anfrage> getAnfragen(@RequestParam(required = false) AnfrageStatus status, 
+                                        @RequestParam(required = false) Long kundeId, 
+                                        @RequestParam(required = false) Long experteId) {
+        if(status == null && kundeId == null && experteId == null) {
+            LOG.info("Fetching all anfragen without filters.");
+            return anfrageRepository.findAll();
+        } 
+        else if(status != null && kundeId == null && experteId == null) {
+            LOG.info("Fetching anfragen filtered by status: {}", status);
+            return anfrageRepository.findByStatus(status);
+        }
+        else if(status == null && kundeId != null && experteId == null) {
+            LOG.info("Fetching anfragen filtered by kundeId: {}", kundeId);
+            return anfrageRepository.findByKundeId(kundeId);
+        }
+        else if(status == null && kundeId == null && experteId != null) {   
+            LOG.info("Fetching anfragen filtered by experteId: {}", experteId);
+            return anfrageRepository.findByExperteId(experteId);
+        }
+        else if(status != null && kundeId != null && experteId == null) {
+            LOG.info("Fetching anfragen filtered by status: {} and kundeId: {}", status, kundeId);
+            return anfrageRepository.findByStatusAndKundeId(status, kundeId);
+        }
+        else if(status != null && kundeId == null && experteId != null) {
+            LOG.info("Fetching anfragen filtered by status: {} and experteId: {}", status, experteId);
+            return anfrageRepository.findByStatusAndExperteId(status, experteId);
+        }
+        else if(status == null && kundeId != null && experteId != null) {
+            LOG.info("Fetching anfragen filtered by kundeId: {} and experteId: {}", kundeId, experteId);
+            return anfrageRepository.findByKundeIdAndExperteId(kundeId, experteId);
+        }
+        LOG.info("Fetching anfragen filtered by status: {}, kundeId: {} and experteId: {}", status, kundeId, experteId);
+        return anfrageRepository.findByStatusAndKundeIdAndExperteId(status, kundeId, experteId);
+
     }
 
     @PostMapping

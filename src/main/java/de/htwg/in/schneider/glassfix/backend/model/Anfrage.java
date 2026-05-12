@@ -18,6 +18,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 
+import de.htwg.in.schneider.glassfix.backend.model.AnfrageStatus;
+
 @Entity
 public class Anfrage {
     @Id
@@ -95,6 +97,7 @@ public class Anfrage {
         if(this.experte != null) {
             throw new IllegalStateException("Die Anfrage hat bereits einen Experten zugewiesen.");
         }
+        status = AnfrageStatus.IN_PRUEFUNG;
         this.experte = experte;
     }
 

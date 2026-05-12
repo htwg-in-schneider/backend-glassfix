@@ -5,16 +5,16 @@ info:
 
 http:
   method: PUT
-  url: http://localhost:8081/api/benutzer/1
+  url: http://localhost:8081/api/benutzer/4
   body:
     type: json
     data: |-
       {
-      "benutzername" : "Kunde1_Updated",
-      "email" : "kunde1@example.com",
+      "benutzername" : "Juan_Cerda_Updated",
+      "email" : "juan.cerda@example.com",
       "hashpasswort" : "passwort123",
       "rolle" : "KUNDE",
-      "adresse" : "Musterstraße 37, 12345 Musterstadt",
+      "adresse" : "Beispielweg 2, 54321 Beispielstadt",
       "telefonnummer" : "0123456789"
       }
   auth: inherit

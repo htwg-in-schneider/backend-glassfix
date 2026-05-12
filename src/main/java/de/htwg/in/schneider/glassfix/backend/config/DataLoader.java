@@ -20,52 +20,104 @@ public class DataLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataLoader.class);
 
     @Bean
-    public CommandLineRunner loadData(AnfrageRepository repository, BenutzerRepository benutzerRepository) {
+    public CommandLineRunner loadData(AnfrageRepository anfrageRepository, BenutzerRepository benutzerRepository) {
         return args -> {
-            if (repository.count() == 0) { // Check if the repository is empty
+            if (anfrageRepository.count() == 0) { // Check if the repository is empty
                 LOGGER.info("Database is empty. Loading initial data...");
-                loadInitialData(repository, benutzerRepository);
+                loadInitialData(anfrageRepository, benutzerRepository);
             } else {
                 LOGGER.info("Database already contains data. Skipping data loading.");
             }
         };
     }
 
-    private void loadInitialData(AnfrageRepository repository, BenutzerRepository benutzerRepository) {
-        Benutzer kunde1 = new Benutzer();
-        kunde1.setBenutzername("Kunde1");
-        kunde1.setEmail("kunde1@example.com");
-        kunde1.setHashpasswort("passwort1");
-        kunde1.setRolle(Rolle.KUNDE);
-        kunde1.setAdresse("Musterstraße 1, 12345 Musterstadt");
-        kunde1.setTelefonnummer("0123456789");
-        benutzerRepository.save(kunde1);
-        benutzerRepository.save(kunde1);
+    private void loadInitialData(AnfrageRepository anfrageRepository, BenutzerRepository benutzerRepository) {
+        Benutzer experte1 = new Benutzer();
+        experte1.setBenutzername("Experte_1");
+        experte1.setEmail("experte1@example.com");
+        experte1.setHashpasswort("expertepasswort1");
+        experte1.setRolle(Rolle.FACHKRAFT);
+        experte1.setAdresse("Expertenstraße 1, 12345 Expertenstadt");
+        experte1.setTelefonnummer("0123456789");
+        benutzerRepository.save(experte1);
 
-        Benutzer kunde2 = new Benutzer();
-        kunde2.setBenutzername("Kunde2");
-        kunde2.setEmail("kunde2@example.com");
-        kunde2.setHashpasswort("passwort2");
-        kunde2.setRolle(Rolle.KUNDE);
-        kunde2.setAdresse("Beispielweg 2, 54321 Beispielstadt");
-        kunde2.setTelefonnummer("0987654321");
-        benutzerRepository.save(kunde2);
+        Benutzer experte2 = new Benutzer();
+        experte2.setBenutzername("Experte_2");
+        experte2.setEmail("experte2@example.com");
+        experte2.setHashpasswort("expertepasswort2");
+        experte2.setRolle(Rolle.FACHKRAFT);
+        experte2.setAdresse("Expertenstraße 2, 12345 Expertenstadt");
+        experte2.setTelefonnummer("0123456789");
+        benutzerRepository.save(experte2);
 
-        Anfrage anfrage1 = new Anfrage();
-        anfrage1.setKategorie("Kategorie 1");
-        anfrage1.setKunde(kunde1);
-        anfrage1.setBeschreibung("Beschreibung 1");
-        anfrage1.setFragen("Fragen 1");
-        anfrage1.setBildUrl("https://neshanjo.github.io/saitenweise-images/violin_pro.jpg");
 
-        Anfrage anfrage2 = new Anfrage();
-        anfrage2.setKategorie("Kategorie 2");
-        anfrage2.setKunde(kunde2);
-        anfrage2.setBeschreibung("Beschreibung 2");
-        anfrage2.setFragen("Fragen 2");
-        anfrage2.setBildUrl("https://neshanjo.github.io/saitenweise-images/doublebass_pro.jpg");
+        Benutzer roman = new Benutzer();
+        roman.setBenutzername("Roman_Mueller");
+        roman.setEmail("roman.mueller@example.com");
+        roman.setHashpasswort("passwort123");
+        roman.setRolle(Rolle.KUNDE);
+        roman.setAdresse("Musterstraße 1, 12345 Musterstadt");
+        roman.setTelefonnummer("0123456789");
+        benutzerRepository.save(roman);
 
-        repository.saveAll(Arrays.asList(anfrage1, anfrage2));
+        Benutzer juan = new Benutzer();
+        juan.setBenutzername("Juan_Cerda");
+        juan.setEmail("juan.cerda@example.com");
+        juan.setHashpasswort("passwort2");
+        juan.setRolle(Rolle.KUNDE);
+        juan.setAdresse("Beispielweg 2, 54321 Beispielstadt");
+        juan.setTelefonnummer("0987654321");
+        benutzerRepository.save(juan);
+
+        Benutzer max = new Benutzer();
+        max.setBenutzername("Max_Mustermann");
+        max.setEmail("max.mustermann@example.com");
+        max.setHashpasswort("passwort3");
+        max.setRolle(Rolle.KUNDE);
+        max.setAdresse("Musterstraße 3, 12345 Musterstadt");
+        max.setTelefonnummer("0123456789");
+        benutzerRepository.save(max);
+
+        Benutzer maike = new Benutzer();
+        maike.setBenutzername("Maike_Meier");
+        maike.setEmail("meike.meier@example.com");
+        maike.setHashpasswort("passwort4");
+        maike.setRolle(Rolle.KUNDE);
+        maike.setAdresse("Musterstraße 4, 12345 Musterstadt");
+        maike.setTelefonnummer("0123456789");
+        benutzerRepository.save(maike);
+
+        Anfrage anfrageRoman = new Anfrage();
+        anfrageRoman.setKategorie("Kategorie 1");
+        anfrageRoman.setKunde(roman);
+        anfrageRoman.setBeschreibung("Beschreibung 1");
+        anfrageRoman.setFragen("Fragen 1");
+        anfrageRoman.setBildUrl("https://neshanjo.github.io/saitenweise-images/violin_pro.jpg");
+
+        Anfrage anfrageJuan = new Anfrage();
+        anfrageJuan.setKategorie("Kategorie 2");
+        anfrageJuan.setKunde(juan);
+        anfrageJuan.setBeschreibung("Beschreibung 2");
+        anfrageJuan.setFragen("Fragen 2");
+        anfrageJuan.setBildUrl("https://neshanjo.github.io/saitenweise-images/doublebass_pro.jpg");
+
+        Anfrage anfrageMax = new Anfrage();
+        anfrageMax.setKategorie("Kategorie 3");
+        anfrageMax.setKunde(max);
+        anfrageMax.setExperte(experte1);
+        anfrageMax.setBeschreibung("Beschreibung 3");
+        anfrageMax.setFragen("Fragen 3");
+        anfrageMax.setBildUrl("https://neshanjo.github.io/saitenweise-images/violin_pro.jpg");
+
+        Anfrage anfrageMaike = new Anfrage();
+        anfrageMaike.setKategorie("Kategorie 4");
+        anfrageMaike.setKunde(maike);
+        anfrageMaike.setExperte(experte2);
+        anfrageMaike.setBeschreibung("Beschreibung 4");
+        anfrageMaike.setFragen("Fragen 4");
+        anfrageMaike.setBildUrl("https://neshanjo.github.io/saitenweise-images/doublebass_pro.jpg");
+
+        anfrageRepository.saveAll(Arrays.asList(anfrageRoman, anfrageJuan, anfrageMax, anfrageMaike));
         LOGGER.info("Initial data loaded successfully.");
     }
 }

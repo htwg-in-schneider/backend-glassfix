@@ -95,3 +95,10 @@ In this iteration the backend was extended to support full CRUD operations for `
 
   - this and other example requests can be found in `src/test/bruno` which can be opened with the [Bruno API Client](https://www.usebruno.com/).
 - In `DataLoader`, some example of `Benutzer` are added to the database.
+
+## Iteration 6: Search and filter Anfragen
+
+- Added request parameters `status`. `kundeId` and `experteId` in `AnfrageController#getAnfragen` to search by status, kundeId and experteId.
+- Added corresponding repository methods
+- Added endpoint to list all `AnfrageStatus ` see`AnfrageStatusController`.
+- added more initial Data in `DataLoader`
