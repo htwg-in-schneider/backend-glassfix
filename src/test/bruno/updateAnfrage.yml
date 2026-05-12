@@ -11,7 +11,6 @@ http:
     data: |-
       {
       "kategorie" : "D",
-      "kunde" : "Max Muster UPDATED",
       "status" : "IN_PRUEFUNG",
       "beschreibung" : "Mein Glas ist kaputt.",
       "fragen" : "Wie kann ich das Problem beheben? Was kostet die Reparatur? Wie lange dauert die Reparatur?",

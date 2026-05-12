@@ -1,0 +1,26 @@
+info:
+  name: createBenutzer
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:8081/api/benutzer
+  body:
+    type: json
+    data: |-
+      {
+      "benutzername" : "MaxMuster",
+      "email" : "max.muster@example.com",
+      "hashpasswort" : "passwort123",
+      "rolle" : "KUNDE",
+      "adresse" : "Musterstraße 1, 12345 Musterstadt",
+      "telefonnummer" : "0123456789"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

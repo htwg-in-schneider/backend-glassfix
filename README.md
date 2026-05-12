@@ -71,3 +71,27 @@ In this iteration the backend was extended to support full CRUD operations for `
   - DELETE /api/anfrage/{id} — delete a `Anfrage` (204 on success, 404 if not found)
 - No Validation: Entities are not validated before written to the database!
 - Example request to be used in bruno were added to `src/test/bruno`
+
+## Iteration 5: Added 1:n relation Anfrage - Benutzer
+
+- Added `Benutzer` entity with bidirectional relation to `Anfrage`, see `Anfrage#kunde`, `Anfrage#experte` and `Benutzer#anfragenKunde`, `Benutzer#anfragenExperte` with the corresponding Annotations.
+- **Important**: In order to avoid endless recursion when serializing these types to JSON in the rest controller, `Benutzer#anfragenKunde` and `Benutzer#anfragenExperte` have `@JsonIgnore`. Hence, all REST endpoints returning `Benutzer` do not include the `Anfragen` of a `Benutzer`.
+  - To get the `Anfrage` of a `Benutzer`, you have to call `/api/anfrage/kunde/<KundeID>` or `/api/anfrage/experte/<experteID>`.
+- Also note the `@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })` on every Entity which avoids problems with serialization JPA entities to JSON.
+- Added Create, Read, Update and Delete for `Benutzer` in `BenutzerController`.
+  - To create a `Anfrage` for the `Benutzer` with id 1, POST this content to `/api/anfrage`:
+
+      ```json
+      {
+      "kategorie" : "C",
+      "kunde" : {
+         "id" : 1
+      },
+      "beschreibung" : "Mein Glas ist kaputt.",
+      "fragen" : "Wie kann ich das Problem beheben? Was kostet die Reparatur? Wie lange dauert die Reparatur?",
+      "bildUrl" : "https://example.com/images/smartphone.jpg"
+      }
+      ```
+
+  - this and other example requests can be found in `src/test/bruno` which can be opened with the [Bruno API Client](https://www.usebruno.com/).
+- In `DataLoader`, some example of `Benutzer` are added to the database.

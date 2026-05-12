@@ -1,14 +1,21 @@
 package de.htwg.in.schneider.glassfix.backend.model;
 
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 
 @Entity
@@ -20,10 +27,15 @@ public class Anfrage {
     @Column(nullable = false)
     private String kategorie;
 
-    @Column(nullable = false)
-    private String kunde;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "kunde_id", nullable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Benutzer kunde;
 
-    private String experte;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "experte_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Benutzer experte;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -38,7 +50,7 @@ public class Anfrage {
 
     @CreationTimestamp
     @Column(name= "erstellungsdatum", updatable = false, nullable = false)
-    private String erstellungsdatum;
+    private LocalDateTime erstellungsdatum;
 
     private String beschreibung;
     
@@ -67,19 +79,22 @@ public class Anfrage {
         this.kategorie = kategorie;
     }
 
-    public String getKunde() {
+    public Benutzer getKunde() {
         return kunde;
     }
 
-    public void setKunde(String kunde) {
+    public void setKunde(Benutzer kunde) {
         this.kunde = kunde;
     }
 
-    public String getExperte() {
+    public Benutzer getExperte() {
         return experte;
     }
 
-    public void setExperte(String experte) {
+    public void setExperte(Benutzer experte) {
+        if(this.experte != null) {
+            throw new IllegalStateException("Die Anfrage hat bereits einen Experten zugewiesen.");
+        }
         this.experte = experte;
     }
 
@@ -91,11 +106,11 @@ public class Anfrage {
         this.status = status;
     }
 
-    public String getErstellungsdatum() {
+    public LocalDateTime getErstellungsdatum() {
         return erstellungsdatum;
     }
 
-    public void setErstellungsdatum(String erstellungsdatum) {
+    public void setErstellungsdatum(LocalDateTime erstellungsdatum) {
         this.erstellungsdatum = erstellungsdatum;
     }
 

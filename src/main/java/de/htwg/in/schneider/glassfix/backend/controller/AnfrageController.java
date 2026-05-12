@@ -16,8 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.htwg.in.schneider.glassfix.backend.model.Rolle;
+import de.htwg.in.schneider.glassfix.backend.model.Benutzer;
 import de.htwg.in.schneider.glassfix.backend.model.Anfrage;
 import de.htwg.in.schneider.glassfix.backend.repository.AnfrageRepository;
+import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
 
 @RestController
 @RequestMapping("/api/anfrage")
@@ -28,20 +31,46 @@ public class AnfrageController {
     @Autowired
     private AnfrageRepository anfrageRepository;
 
+    @Autowired
+    private BenutzerRepository benutzerRepository;
+
     @GetMapping
     public List<Anfrage> getAllAnfragen() {
-        return anfrageRepository.findAll();
+        LOG.info("Fetching all anfragen");
+        List<Anfrage> anfragen = anfrageRepository.findAll();
+        LOG.info("Found {} anfragen", anfragen != null ? anfragen.size() : 0);
+        return anfragen;
     }
 
     @PostMapping
-    public Anfrage createAnfrage(@RequestBody Anfrage anfrage) {
-        if (anfrage.getId() != null) {
-            anfrage.setId(null);
-            LOG.warn("Attempted to create an anfrage with an existing ID. ID has been set to null to create a new anfrage.");
+    public ResponseEntity<Anfrage> createAnfrage(@RequestBody Anfrage anfrage) {
+
+        Long kundeId = null;
+        if (anfrage != null && anfrage.getKunde() != null) {
+            kundeId = anfrage.getKunde().getId();
         }
-        Anfrage newAnfrage = anfrageRepository.save(anfrage);
-        LOG.info("Created new anfrage with id " + newAnfrage.getId());
-        return newAnfrage;
+        LOG.info("Attempting to create new anfrage for kunde with id " + kundeId);
+
+        if (anfrage == null) {
+            LOG.warn("Received null anfrage object in request body. Cannot create anfrage.");
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (anfrage.getKunde() == null || anfrage.getKunde().getId() == null) {
+            LOG.warn("Anfrage object is missing kunde information. Cannot create anfrage.");
+            return ResponseEntity.badRequest().build();
+        }
+
+        Benutzer kunde = benutzerRepository.findById(anfrage.getKunde().getId()).orElse(null);
+        if (kunde == null) {
+            LOG.warn("No kunde found with id " + anfrage.getKunde().getId() + ". Cannot create anfrage.");
+            return ResponseEntity.badRequest().build();
+        }
+
+        anfrage.setKunde(kunde);
+        Anfrage createdAnfrage = anfrageRepository.save(anfrage);
+        LOG.info("Anfrage created with id " + createdAnfrage.getId() + " for kunde with id " + kundeId);
+        return ResponseEntity.ok(createdAnfrage);
     }
 
     @GetMapping("/{id}")
@@ -54,6 +83,22 @@ public class AnfrageController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/kunde/{kundeId}")
+    public List<Anfrage> getAnfragenByKundeId(@PathVariable Long kundeId) {
+        LOG.info("Fetching anfragen for kunde with id " + kundeId);
+        List<Anfrage> anfragen = anfrageRepository.findByKundeId(kundeId);
+        LOG.info("Found {} anfragen for kunde with id {}", anfragen != null ? anfragen.size() : 0, kundeId);
+        return anfragen;
+    }
+
+    @GetMapping("/experte/{experteId}")
+    public List<Anfrage> getAnfragenByExperteId(@PathVariable Long experteId) {
+        LOG.info("Fetching anfragen for experte with id " + experteId);
+        List<Anfrage> anfragen = anfrageRepository.findByExperteId(experteId);
+        LOG.info("Found {} anfragen for experte with id {}", anfragen != null ? anfragen.size() : 0, experteId);
+        return anfragen;
+    }   
 
     @PutMapping("/{id}")
     public ResponseEntity<Anfrage> updateAnfrage(@PathVariable Long id, @RequestBody Anfrage updatedAnfrage) {

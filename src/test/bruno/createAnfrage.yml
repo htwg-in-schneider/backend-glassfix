@@ -1,7 +1,7 @@
 info:
   name: createAnfrage
   type: http
-  seq: 1
+  seq: 9
 
 http:
   method: POST
@@ -11,7 +11,9 @@ http:
     data: |-
       {
       "kategorie" : "C",
-      "kunde" : "Felix Muster",
+      "kunde" : {
+      "id" : 1
+      },
       "beschreibung" : "Mein Glas ist kaputt.",
       "fragen" : "Wie kann ich das Problem beheben? Was kostet die Reparatur? Wie lange dauert die Reparatur?",
       "bildUrl" : "https://example.com/images/smartphone.jpg"

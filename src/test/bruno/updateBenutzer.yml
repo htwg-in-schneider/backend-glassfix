@@ -1,0 +1,26 @@
+info:
+  name: updateBenutzer
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: http://localhost:8081/api/benutzer/1
+  body:
+    type: json
+    data: |-
+      {
+      "benutzername" : "Kunde1_Updated",
+      "email" : "kunde1@example.com",
+      "hashpasswort" : "passwort123",
+      "rolle" : "KUNDE",
+      "adresse" : "Musterstraße 37, 12345 Musterstadt",
+      "telefonnummer" : "0123456789"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
