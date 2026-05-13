@@ -102,3 +102,11 @@ In this iteration the backend was extended to support full CRUD operations for `
 - Added corresponding repository methods
 - Added endpoint to list all `AnfrageStatus ` see`AnfrageStatusController`.
 - added more initial Data in `DataLoader`
+
+## Iteration 7: Added SessionService
+
+- Added a `SessionService` in order to manage correctly the rights of each kind of `Benutzer`(`Rolle`).
+- `Kunde` can only see, delete and update certain fields of its own `Anfragen`.
+- `Fachkraft` can only see and answer to the `Anfragen` he has been asseigned to.
+- When creating a new `Benutzer` the standard `Rolle` is KUNDE. Only the `GESCHAEFTSFUEHRER` can create users with other Roles.
+- tests and examples can be found in `src/test/bruno`. First is necessary to execute the GET `createLoginRequest.yml` in order to have access to the data in the database.

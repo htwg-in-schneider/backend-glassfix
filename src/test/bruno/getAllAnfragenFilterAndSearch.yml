@@ -5,7 +5,14 @@ info:
 
 http:
   method: GET
-  url: http://localhost:8081/api/anfrage?status=ERSTELLT&kundeId=1
+  url: "{{baseUrl}}/anfrage?status=ERSTELLT&kundeId=1"
+  params:
+    - name: status
+      value: ERSTELLT
+      type: query
+    - name: kundeId
+      value: "1"
+      type: query
   auth: inherit
 
 settings:

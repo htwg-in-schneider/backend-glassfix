@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpSession;
 
 import de.htwg.in.schneider.glassfix.backend.model.Benutzer;
 import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
+import de.htwg.in.schneider.glassfix.backend.util.Rolle;
+import de.htwg.in.schneider.glassfix.backend.service.ISessionService;
 
 @RestController
 @RequestMapping("/api/benutzer")
@@ -27,16 +30,26 @@ public class BenutzerController {
     @Autowired
     private BenutzerRepository benutzerRepository;
 
+    @Autowired
+    private ISessionService sessionService;
+
     @GetMapping
-    public List<Benutzer> getAllBenutzer() {
+    public ResponseEntity<List<Benutzer>> getAllBenutzer(HttpSession session) {
+        if (!sessionService.isLoggedIn(session)) {
+            LOG.warn("Unauthorized attempt to fetch all benutzer. User is not logged in.");
+            return ResponseEntity.status(401).build();
+        }
         LOG.info("Fetching all benutzer");
         List<Benutzer> benutzer = benutzerRepository.findAll();
         LOG.info("Found {} benutzer", benutzer != null ? benutzer.size() : 0);
-        return benutzer;
+        return ResponseEntity.ok(benutzer);
     }
 
     @PostMapping
-    public Benutzer createBenutzer(@RequestBody Benutzer benutzer) {
+    public ResponseEntity<Benutzer> createBenutzer(@RequestBody Benutzer benutzer, HttpSession session) {
+        if (!sessionService.isLoggedIn(session) || !sessionService.hasRole(session, Rolle.GESCHAEFTSFUEHRER)) {
+            benutzer.setRolle(Rolle.KUNDE);
+        }
         if (benutzer.getId() != null) {
             benutzer.setId(null);
             LOG.warn("Attempted to create an Benutzer with an existing ID. ID has been set to null to create a new benutzer.");
@@ -44,11 +57,19 @@ public class BenutzerController {
         LOG.info("Creating new benutzer");
         Benutzer createdBenutzer = benutzerRepository.save(benutzer);
         LOG.info("Benutzer created with ID: {}", createdBenutzer.getId());
-        return createdBenutzer;
+        return ResponseEntity.status(201).body(createdBenutzer);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Benutzer> getBenutzerById(@PathVariable Long id){
+    public ResponseEntity<Benutzer> getBenutzerById(@PathVariable Long id, HttpSession session) {
+        if (!sessionService.isLoggedIn(session)) {
+            LOG.warn("Unauthorized attempt to fetch benutzer with id {}. User is not logged in.", id);
+            return ResponseEntity.status(401).build();
+        }
+        if (!id.equals(sessionService.getUserId(session))) {
+            LOG.warn("Benutzer with id {} attempted to fetch benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(session), id);
+            return ResponseEntity.status(403).build();
+        }
         LOG.info("Fetching benutzer with id {}", id);
         Optional<Benutzer> benutzer = benutzerRepository.findById(id);
         if (benutzer.isPresent()) {
@@ -61,7 +82,15 @@ public class BenutzerController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBenutzer(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBenutzer(@PathVariable Long id, HttpSession session) {
+        if (!sessionService.isLoggedIn(session)) {
+            LOG.warn("Unauthorized attempt to delete benutzer with id {}. User is not logged in.", id);
+            return ResponseEntity.status(401).build();
+        }
+        if (!id.equals(sessionService.getUserId(session))) {
+            LOG.warn("Benutzer with id {} attempted to delete benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(session), id);
+            return ResponseEntity.status(403).build();
+        }
         LOG.info("Attempting to delete benutzer with id {}", id);
         if (!benutzerRepository.existsById(id)) {
             LOG.warn("Benutzer with id {} not found for deletion", id);
@@ -73,7 +102,15 @@ public class BenutzerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Benutzer> updateBenutzer(@PathVariable Long id, @RequestBody Benutzer benutzer) {
+    public ResponseEntity<Benutzer> updateBenutzer(@PathVariable Long id, @RequestBody Benutzer benutzer, HttpSession session) {
+        if (!sessionService.isLoggedIn(session)) {
+            LOG.warn("Unauthorized attempt to update benutzer with id {}. User is not logged in.", id);
+            return ResponseEntity.status(401).build();
+        }
+        if (!id.equals(sessionService.getUserId(session))) {
+            LOG.warn("Benutzer with id {} attempted to update benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(session), id);
+            return ResponseEntity.status(403).build();
+        }
         LOG.info("Attempting to update benutzer with id {}", id);
         Optional<Benutzer> existingBenutzer = benutzerRepository.findById(id);
         if (!existingBenutzer.isPresent()) {
@@ -81,12 +118,23 @@ public class BenutzerController {
             return ResponseEntity.notFound().build();
         }
         Benutzer benutzerToUpdate = existingBenutzer.get();
-        benutzerToUpdate.setBenutzername(benutzer.getBenutzername());
-        benutzerToUpdate.setEmail(benutzer.getEmail());
-        benutzerToUpdate.setHashpasswort(benutzer.getHashpasswort());
-        benutzerToUpdate.setRolle(benutzer.getRolle());
-        benutzerToUpdate.setAdresse(benutzer.getAdresse());
-        benutzerToUpdate.setTelefonnummer(benutzer.getTelefonnummer());
+        
+        if(benutzer.getBenutzername() != null) {
+            benutzerToUpdate.setBenutzername(benutzer.getBenutzername());
+        }
+        if(benutzer.getEmail() != null) {
+            benutzerToUpdate.setEmail(benutzer.getEmail());
+        }
+        if(benutzer.getHashpasswort() != null) {
+            benutzerToUpdate.setHashpasswort(benutzer.getHashpasswort());
+        }
+        if(benutzer.getAdresse() != null) {
+            benutzerToUpdate.setAdresse(benutzer.getAdresse());
+        }
+        if(benutzer.getTelefonnummer() != null) {
+            benutzerToUpdate.setTelefonnummer(benutzer.getTelefonnummer());
+        }
+
         Benutzer updatedBenutzer = benutzerRepository.save(benutzerToUpdate);
         LOG.info("Benutzer with id {} updated", id);
 
