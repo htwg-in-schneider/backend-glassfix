@@ -43,4 +43,19 @@ public class AuthController {
         sessionService.removeSession(session);
         return ResponseEntity.ok().build();
     }
+    @GetMapping("/me")
+    public ResponseEntity<?> getAktuellenBenutzer(HttpSession session) {
+        // Überprüfen, ob eine gültige Session existiert
+        if (!sessionService.isLoggedIn(session)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nicht angemeldet.");
+        }
+
+        // Benutzer-ID aus der Session auslesen
+        Long benutzerId = sessionService.getUserId(session);
+        
+        // Benutzer aus der Datenbank laden
+        return benutzerRepository.findById(benutzerId)
+                .map(benutzer -> ResponseEntity.ok(benutzer))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
 }

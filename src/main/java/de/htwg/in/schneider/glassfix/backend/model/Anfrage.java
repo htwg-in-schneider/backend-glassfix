@@ -106,8 +106,8 @@ public class Anfrage {
         this.status = status;
     }
 
-    public LocalDateTime getErstellungsdatum() {
-        return erstellungsdatum;
+    public String getErstellungsdatum() {
+        return erstellungsdatum.toString();
     }
 
     public void setErstellungsdatum(LocalDateTime erstellungsdatum) {
