@@ -1,4 +1,4 @@
-package de.htwg.in.schneider.glassfix.backend.model; // O el paquete .dto
+package de.htwg.in.schneider.glassfix.backend.model;
 
 public class LoginRequest {
     private String email;

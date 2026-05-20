@@ -1,17 +1,17 @@
 info:
-  name: Untitled 1
+  name: createAuskunft
   type: http
-  seq: 1
+  seq: 3
 
 http:
-  method: POST
-  url: "{{baseUrl}}/auth/login"
+  method: PUT
+  url: "{{baseUrl}}/anfrage/2"
   body:
     type: json
     data: |-
       {
-        "email":"juan.cerda@example.com",
-        "password":"passwort123"
+      "antwort" : "Antwort für Anfrage 1",
+      "status" : "PRUEFUNG_ABGESCHLOSSEN"
       }
   auth: inherit
 

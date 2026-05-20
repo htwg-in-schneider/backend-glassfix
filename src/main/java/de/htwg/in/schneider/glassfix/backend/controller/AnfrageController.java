@@ -17,6 +17,7 @@ import de.htwg.in.schneider.glassfix.backend.model.AnfrageStatus;
 import de.htwg.in.schneider.glassfix.backend.repository.AnfrageRepository;
 import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
 import de.htwg.in.schneider.glassfix.backend.service.ISessionService;
+import de.htwg.in.schneider.glassfix.backend.service.AnfrageService;
 import jakarta.servlet.http.HttpSession;
 
 @RestController
@@ -34,14 +35,18 @@ public class AnfrageController {
     @Autowired
     private ISessionService sessionService;
 
+    @Autowired
+    private AnfrageService anfrageService;
+
+
     @GetMapping
-    public List<Anfrage> getAnfragen(@RequestParam(required = false) AnfrageStatus status, 
+    public ResponseEntity<List<Anfrage>> getAnfragen(@RequestParam(required = false) AnfrageStatus status, 
                                         @RequestParam(required = false) Long kundeId, 
                                         @RequestParam(required = false) Long experteId, HttpSession session) {
         
         if (!sessionService.isLoggedIn(session)) {
             LOG.warn("Unauthorized attempt to fetch anfragen. User is not logged in.");
-            return List.of();
+            return ResponseEntity.status(401).build();
         }
 
         if (sessionService.hasRole(session, Rolle.KUNDE)) {
@@ -54,43 +59,43 @@ public class AnfrageController {
 
         if (sessionService.hasRole(session, Rolle.FACHKRAFT)) {
             if (experteId != null && !experteId.equals(sessionService.getUserId(session))) {
-                LOG.warn("FACHKRAFT with id {} attempted to filter anfragen by experteId {} which does not match their own id. Ignoring experteId filter.", sessionService.getUserId(session), experteId);
+                LOG.warn("FACHKRAFT with id {} attempted to filter anfragen by experteId {} which does not match their own id. Ignoring filter.", sessionService.getUserId(session), experteId);
+                status = AnfrageStatus.ERSTELLT;
+                experteId = null;
             }
-            experteId = sessionService.getUserId(session);
-            LOG.info("User with id {} is a FACHKRAFT. Automatically filtering anfragen by experteId: {}", experteId, experteId);
         }
 
 
         if(status == null && kundeId == null && experteId == null) {
             LOG.info("Fetching all anfragen without filters.");
-            return anfrageRepository.findAll();
+            return ResponseEntity.ok(anfrageRepository.findAll());
         } 
         else if(status != null && kundeId == null && experteId == null) {
             LOG.info("Fetching anfragen filtered by status: {}", status);
-            return anfrageRepository.findByStatus(status);
+            return ResponseEntity.ok(anfrageRepository.findByStatus(status));
         }
         else if(status == null && kundeId != null && experteId == null) {
             LOG.info("Fetching anfragen filtered by kundeId: {}", kundeId);
-            return anfrageRepository.findByKundeId(kundeId);
+            return ResponseEntity.ok(anfrageRepository.findByKundeId(kundeId));
         }
         else if(status == null && kundeId == null && experteId != null) {   
             LOG.info("Fetching anfragen filtered by experteId: {}", experteId);
-            return anfrageRepository.findByExperteId(experteId);
+            return ResponseEntity.ok(anfrageRepository.findByExperteId(experteId));
         }
         else if(status != null && kundeId != null && experteId == null) {
             LOG.info("Fetching anfragen filtered by status: {} and kundeId: {}", status, kundeId);
-            return anfrageRepository.findByStatusAndKundeId(status, kundeId);
+            return ResponseEntity.ok(anfrageRepository.findByStatusAndKundeId(status, kundeId));
         }
         else if(status != null && kundeId == null && experteId != null) {
             LOG.info("Fetching anfragen filtered by status: {} and experteId: {}", status, experteId);
-            return anfrageRepository.findByStatusAndExperteId(status, experteId);
+            return ResponseEntity.ok(anfrageRepository.findByStatusAndExperteId(status, experteId));
         }
         else if(status == null && kundeId != null && experteId != null) {
             LOG.info("Fetching anfragen filtered by kundeId: {} and experteId: {}", kundeId, experteId);
-            return anfrageRepository.findByKundeIdAndExperteId(kundeId, experteId);
+            return ResponseEntity.ok(anfrageRepository.findByKundeIdAndExperteId(kundeId, experteId));
         }
         LOG.info("Fetching anfragen filtered by status: {}, kundeId: {} and experteId: {}", status, kundeId, experteId);
-        return anfrageRepository.findByStatusAndKundeIdAndExperteId(status, kundeId, experteId);
+        return ResponseEntity.ok(anfrageRepository.findByStatusAndKundeIdAndExperteId(status, kundeId, experteId));
 
     }
 
@@ -106,7 +111,7 @@ public class AnfrageController {
         Benutzer kunde = benutzerRepository.findById(kundeId).orElse(null);
         if (kunde == null) {
             LOG.warn("No kunde found with id " + kundeId + " from session. Cannot create anfrage.");
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(404).build();
         }
 
         LOG.info("Attempting to create new anfrage for kunde with id " + kundeId);
@@ -116,6 +121,8 @@ public class AnfrageController {
             return ResponseEntity.badRequest().build();
         }
 
+        anfrage.setExperte(null);
+        anfrage.setStatus(AnfrageStatus.ERSTELLT);
         anfrage.setKunde(kunde);
         Anfrage createdAnfrage = anfrageRepository.save(anfrage);
         LOG.info("Anfrage created with id " + createdAnfrage.getId() + " for kunde with id " + kundeId);
@@ -123,9 +130,24 @@ public class AnfrageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Anfrage> getAnfrageById(@PathVariable Long id){
+    public ResponseEntity<Anfrage> getAnfrageById(@PathVariable Long id, HttpSession session){
+        if (!sessionService.isLoggedIn(session)){
+            return ResponseEntity.status(401).build();
+        }
         Optional<Anfrage> anfrage = anfrageRepository.findById(id);
         if (anfrage.isPresent()) {
+            if (sessionService.hasRole(session, Rolle.KUNDE)){
+                if(!anfrage.get().getKunde().getId().equals(sessionService.getUserId(session))){
+                    LOG.warn("Kunde with ID {} attempted to see an Anfrage not of its own.", sessionService.getUserId(session));
+                    return ResponseEntity.status(403).build();
+                }
+            }
+            if(sessionService.hasRole(session, Rolle.FACHKRAFT)){
+                if(!anfrage.get().getExperte().getId().equals(sessionService.getUserId(session))){
+                    LOG.warn("Fachkraft with ID {} attemted to see an Anfrage he is not part of.", sessionService.getUserId(session));
+                    return ResponseEntity.status(403).build();
+                }
+            }
             return ResponseEntity.ok(anfrage.get());
         } else {
             LOG.warn("Anfrage with id " + id + " not found.");
@@ -133,37 +155,7 @@ public class AnfrageController {
         }
     }
 
-    @GetMapping("/kunde/{kundeId}")
-    public ResponseEntity<List<Anfrage>> getAnfragenByKundeId(@PathVariable Long kundeId, HttpSession session) {
-        if (!sessionService.isLoggedIn(session)) {
-            LOG.warn("Unauthorized attempt to fetch anfragen for kunde with id " + kundeId + ". User is not logged in.");
-            return ResponseEntity.status(401).build();
-        }
-        if (sessionService.hasRole(session, Rolle.KUNDE) && !kundeId.equals(sessionService.getUserId(session))) {
-            LOG.warn("KUNDE with id {} attempted to fetch anfragen for kundeId {} which does not match their own id. Ignoring request.", sessionService.getUserId(session), kundeId);
-            return ResponseEntity.status(403).build();
-        }
-        LOG.info("Fetching anfragen for kunde with id " + kundeId);
-        List<Anfrage> anfragen = anfrageRepository.findByKundeId(kundeId);
-        LOG.info("Found {} anfragen for kunde with id {}", anfragen != null ? anfragen.size() : 0, kundeId);
-        return ResponseEntity.ok(anfragen);
-    }
-
-    @GetMapping("/experte/{experteId}")
-    public ResponseEntity<List<Anfrage>> getAnfragenByExperteId(@PathVariable Long experteId, HttpSession session) {
-        if (!sessionService.isLoggedIn(session)) {
-            LOG.warn("Unauthorized attempt to fetch anfragen for experte with id " + experteId + ". User is not logged in.");
-            return ResponseEntity.status(401).build();
-        }
-        if (sessionService.hasRole(session, Rolle.FACHKRAFT) && !experteId.equals(sessionService.getUserId(session))) {
-            LOG.warn("FACHKRAFT with id {} attempted to fetch anfragen for experteId {} which does not match their own id. Ignoring request.", sessionService.getUserId(session), experteId);
-            return ResponseEntity.status(403).build();
-        }
-        LOG.info("Fetching anfragen for experte with id " + experteId);
-        List<Anfrage> anfragen = anfrageRepository.findByExperteId(experteId);
-        LOG.info("Found {} anfragen for experte with id {}", anfragen != null ? anfragen.size() : 0, experteId);
-        return ResponseEntity.ok(anfragen);
-    }   
+    
 
    @PutMapping("/{id}")
     public ResponseEntity<Anfrage> updateAnfrage(@PathVariable Long id, @RequestBody Anfrage updatedAnfrage, HttpSession session) {
@@ -181,32 +173,35 @@ public class AnfrageController {
 
         try {
             if (sessionService.hasRole(session, Rolle.KUNDE)) {
-                // Eigene Anfragen dürfen nur KUNDE bearbeiten, und nur bestimmte Felder (Kategorie, Beschreibung, BildUrl, Fragen)
+                // Kunden dürfen nur eigene Anfragen bearbeiten, und nur bestimmte Felder (Kategorie, Beschreibung, BildUrl, Fragen)
                 if (!anfrageToUpdate.getKunde().getId().equals(sessionService.getUserId(session))) {
                     return ResponseEntity.status(403).build();
                 }
-                anfrageToUpdate.setKategorie(updatedAnfrage.getKategorie());    
-                anfrageToUpdate.setBeschreibung(updatedAnfrage.getBeschreibung());
-                anfrageToUpdate.setBildUrl(updatedAnfrage.getBildUrl());
-                anfrageToUpdate.setFragen(updatedAnfrage.getFragen());
-            }
 
-            // 
+                if(!anfrageToUpdate.getStatus().equals(AnfrageStatus.ERSTELLT)){
+                    LOG.warn("Kunde with ID {} tried to update Anfrage, which is no longer available for updates.", sessionService.getUserId(session));
+                    return ResponseEntity.status(403).build();
+                }
+                
+                if (updatedAnfrage.getKategorie() != null) anfrageToUpdate.setKategorie(updatedAnfrage.getKategorie());
+                if (updatedAnfrage.getBeschreibung() != null) anfrageToUpdate.setBeschreibung(updatedAnfrage.getBeschreibung());
+                if (updatedAnfrage.getBildUrl() != null) anfrageToUpdate.setBildUrl(updatedAnfrage.getBildUrl());
+                if (updatedAnfrage.getFragen() != null) anfrageToUpdate.setFragen(updatedAnfrage.getFragen());
+            }
+ 
             if (sessionService.hasRole(session, Rolle.FACHKRAFT)) {
                 // Eigene Anfragen dürfen nur FACHKRAFT bearbeiten, und nur bestimmte Felder (Antwort)
-                    if (anfrageToUpdate.getExperte() == null || !anfrageToUpdate.getExperte().getId().equals(sessionService.getUserId(session))) {
+                    if (anfrageToUpdate.getExperte() != null && !anfrageToUpdate.getExperte().getId().equals(sessionService.getUserId(session))) {
                         return ResponseEntity.status(403).build();
                     }
-                anfrageToUpdate.setAntwort(updatedAnfrage.getAntwort());
-            }
-            
-            // Nur GESCHAEFTSFUEHRER können den Experten zuweisen, und das ändert automatisch den Status auf IN_PRUEFUNG
-            if (sessionService.hasRole(session, Rolle.GESCHAEFTSFUEHRER)) {
-                if (updatedAnfrage.getExperte() != null) {
-                    // Wenn setExperte eine IllegalStateException wirft, wird sie in der catch-Klausel weiter unten abgefangen und behandelt
-                    anfrageToUpdate.setExperte(updatedAnfrage.getExperte());
+                if (updatedAnfrage.getAntwort() != null) {
+                    anfrageToUpdate.setAntwort(updatedAnfrage.getAntwort());
+                }
+                if (updatedAnfrage.getStatus() != null && updatedAnfrage.getStatus() != anfrageToUpdate.getStatus()) {
+                    anfrageService.updateStatus(anfrageToUpdate, updatedAnfrage.getStatus(), session);
                 }
             }
+            
 
             Anfrage savedAnfrage = anfrageRepository.save(anfrageToUpdate);
             LOG.info("Anfrage {} successfully updated.", savedAnfrage.getId());

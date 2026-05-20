@@ -5,18 +5,10 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.*;
+
 
 import de.htwg.in.schneider.glassfix.backend.model.AnfrageStatus;
 
@@ -45,10 +37,11 @@ public class Anfrage {
 
     @PrePersist
     public void prePersist() {
-        if (status == null) {
+    if (status == null) {
             status = AnfrageStatus.ERSTELLT;
         }
     }
+
 
     @CreationTimestamp
     @Column(name= "erstellungsdatum", updatable = false, nullable = false)
@@ -61,6 +54,11 @@ public class Anfrage {
     private String bildUrl;
     
     private String antwort;
+
+    @OneToOne(mappedBy = "anfrage", cascade = CascadeType.ALL, optional = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnore
+    private Auskunft auskunft;
 
 
 
@@ -94,10 +92,9 @@ public class Anfrage {
     }
 
     public void setExperte(Benutzer experte) {
-        if(this.experte != null) {
-            throw new IllegalStateException("Die Anfrage hat bereits einen Experten zugewiesen.");
+        if (this.experte != null){
+            throw new IllegalStateException();
         }
-        status = AnfrageStatus.IN_PRUEFUNG;
         this.experte = experte;
     }
 
@@ -148,6 +145,12 @@ public class Anfrage {
     public void setAntwort(String antwort) {
         this.antwort = antwort;
     }
+
+    public Auskunft getAuskunft(){
+        return this.auskunft;
+    }
+
+    
 
     @Override
     public String toString() {

@@ -63,7 +63,7 @@ public class DataLoader {
         Benutzer juan = new Benutzer();
         juan.setBenutzername("Juan_Cerda");
         juan.setEmail("juan.cerda@example.com");
-        juan.setHashpasswort("passwort2");
+        juan.setHashpasswort("passwort123");
         juan.setRolle(Rolle.KUNDE);
         juan.setAdresse("Beispielweg 2, 54321 Beispielstadt");
         juan.setTelefonnummer("0987654321");
@@ -104,7 +104,6 @@ public class DataLoader {
         Anfrage anfrageMax = new Anfrage();
         anfrageMax.setKategorie("Kategorie 3");
         anfrageMax.setKunde(max);
-        anfrageMax.setExperte(experte1);
         anfrageMax.setBeschreibung("Beschreibung 3");
         anfrageMax.setFragen("Fragen 3");
         anfrageMax.setBildUrl("https://neshanjo.github.io/saitenweise-images/violin_pro.jpg");
@@ -112,7 +111,6 @@ public class DataLoader {
         Anfrage anfrageMaike = new Anfrage();
         anfrageMaike.setKategorie("Kategorie 4");
         anfrageMaike.setKunde(maike);
-        anfrageMaike.setExperte(experte2);
         anfrageMaike.setBeschreibung("Beschreibung 4");
         anfrageMaike.setFragen("Fragen 4");
         anfrageMaike.setBildUrl("https://neshanjo.github.io/saitenweise-images/doublebass_pro.jpg");

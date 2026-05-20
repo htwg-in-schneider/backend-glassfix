@@ -30,7 +30,6 @@ public class AuthController {
 
         if (benutzer != null) {
             if (benutzer.getHashpasswort().equals(loginRequest.getPassword())) {
-                // Login exitoso
                 sessionService.addSession(session, benutzer);
                 return ResponseEntity.ok("Successful login for: " + benutzer.getBenutzername());
             }

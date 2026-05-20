@@ -1,17 +1,14 @@
 info:
-  name: getAllAnfragenFilterAndSearch
+  name: getFilteredAuskunft
   type: http
   seq: 10
 
 http:
   method: GET
-  url: "{{baseUrl}}/anfrage?status=ERSTELLT&kundeId=1"
+  url: "{{baseUrl}}/anfrage?status=IN_BEARBEITUNG"
   params:
     - name: status
-      value: ERSTELLT
-      type: query
-    - name: kundeId
-      value: "1"
+      value: IN_BEARBEITUNG
       type: query
   auth: inherit
 
@@ -20,4 +17,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-​

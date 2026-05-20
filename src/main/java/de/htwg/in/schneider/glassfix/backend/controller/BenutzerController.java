@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpSession;
 
 import de.htwg.in.schneider.glassfix.backend.model.Benutzer;
 import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
-import de.htwg.in.schneider.glassfix.backend.util.Rolle;
+import de.htwg.in.schneider.glassfix.backend.model.Rolle;
 import de.htwg.in.schneider.glassfix.backend.service.ISessionService;
 
 @RestController
@@ -38,6 +38,10 @@ public class BenutzerController {
         if (!sessionService.isLoggedIn(session)) {
             LOG.warn("Unauthorized attempt to fetch all benutzer. User is not logged in.");
             return ResponseEntity.status(401).build();
+        }
+        if (!sessionService.hasRole(session, Rolle.GESCHAEFTSFUEHRER)){
+            LOG.warn("Unauthorized attempt to fetch all Benutzer. Only Geschaeftsfuehrer is allowed to fetch all Benutzer.");
+            return ResponseEntity.status(403).build();
         }
         LOG.info("Fetching all benutzer");
         List<Benutzer> benutzer = benutzerRepository.findAll();

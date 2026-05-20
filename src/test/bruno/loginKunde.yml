@@ -1,16 +1,17 @@
 info:
-  name: updateAnfrage
+  name: loginKunde
   type: http
-  seq: 3
+  seq: 1
 
 http:
-  method: PUT
-  url: "{{baseUrl}}/anfrage/2"
+  method: POST
+  url: "{{baseUrl}}/auth/login"
   body:
     type: json
     data: |-
       {
-      "status" : "IN_PRUEFUNG"
+        "email":"juan.cerda@example.com",
+        "password":"passwort123"
       }
   auth: inherit
 
