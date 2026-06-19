@@ -92,28 +92,28 @@ public class DataLoader {
         anfrageRoman.setKunde(roman);
         anfrageRoman.setBeschreibung("Beschreibung 1");
         anfrageRoman.setFragen("Fragen 1");
-        anfrageRoman.setBildUrl("https://neshanjo.github.io/saitenweise-images/violin_pro.jpg");
+        anfrageRoman.setBildUrl("https://localhost:5173/frontend-glassfix/ProjektBilder/BeforeAfterLinks.png");
 
         Anfrage anfrageJuan = new Anfrage();
         anfrageJuan.setKategorie("Kategorie 2");
         anfrageJuan.setKunde(juan);
         anfrageJuan.setBeschreibung("Beschreibung 2");
         anfrageJuan.setFragen("Fragen 2");
-        anfrageJuan.setBildUrl("https://neshanjo.github.io/saitenweise-images/doublebass_pro.jpg");
+        anfrageJuan.setBildUrl("https://localhost:5173/frontend-glassfix/ProjektBilder/BeforeAfterLinks.png");
 
         Anfrage anfrageMax = new Anfrage();
         anfrageMax.setKategorie("Kategorie 3");
         anfrageMax.setKunde(max);
         anfrageMax.setBeschreibung("Beschreibung 3");
         anfrageMax.setFragen("Fragen 3");
-        anfrageMax.setBildUrl("https://neshanjo.github.io/saitenweise-images/violin_pro.jpg");
+        anfrageMax.setBildUrl("https://localhost:5173/frontend-glassfix/ProjektBilder/BeforeAfterLinks.png");
 
         Anfrage anfrageMaike = new Anfrage();
         anfrageMaike.setKategorie("Kategorie 4");
         anfrageMaike.setKunde(maike);
         anfrageMaike.setBeschreibung("Beschreibung 4");
         anfrageMaike.setFragen("Fragen 4");
-        anfrageMaike.setBildUrl("https://neshanjo.github.io/saitenweise-images/doublebass_pro.jpg");
+        anfrageMaike.setBildUrl("https://localhost:5173/frontend-glassfix/ProjektBilder/BeforeAfterLinks.png");
 
         anfrageRepository.saveAll(Arrays.asList(anfrageRoman, anfrageJuan, anfrageMax, anfrageMaike));
         LOGGER.info("Initial data loaded successfully.");
