@@ -112,7 +112,6 @@ In this iteration the backend was extended to support full CRUD operations for `
 - tests and examples can be found in `src/test/bruno`. First is necessary to execute the GET `createLoginRequest.yml` in order to have access to the data in the database.
 
 ## Iteration 8: Added user profile and spring security (OAuth2 with Auth0)
-
 - Added auth0 dependency to `pom.xml`
 - Configuration of auth0 in `applications.properties`
 - Enabling OAuth2 / Spring Security in `SecurityConfig.java`.
