@@ -9,7 +9,7 @@ import de.htwg.in.schneider.glassfix.backend.model.Rolle;
 public class SessionService implements ISessionService {
     
     private static final String USER_ROLE = "UserRole";
-    private static final String USER_NAME = "UserName";
+    private static final String USER_OAUTH_ID = "UserOAuthId";
     private static final String USER_ID = "UserId";
 
     @Override
@@ -24,8 +24,8 @@ public class SessionService implements ISessionService {
     }
 
     @Override
-    public String getUserName(HttpSession session) {
-        return (String) session.getAttribute(USER_NAME);
+    public String getOauthId(HttpSession session) {
+        return (String) session.getAttribute(USER_OAUTH_ID);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class SessionService implements ISessionService {
 
     @Override
     public void addSession(HttpSession session, Benutzer benutzer) {
-        session.setAttribute(USER_NAME, benutzer.getBenutzername());
+        session.setAttribute(USER_OAUTH_ID, benutzer.getOauthId());
         session.setAttribute(USER_ROLE, benutzer.getRolle());
         session.setAttribute(USER_ID, benutzer.getId());
     }

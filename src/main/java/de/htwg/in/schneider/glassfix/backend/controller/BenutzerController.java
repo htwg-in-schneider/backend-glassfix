@@ -123,14 +123,8 @@ public class BenutzerController {
         }
         Benutzer benutzerToUpdate = existingBenutzer.get();
         
-        if(benutzer.getBenutzername() != null) {
-            benutzerToUpdate.setBenutzername(benutzer.getBenutzername());
-        }
         if(benutzer.getEmail() != null) {
             benutzerToUpdate.setEmail(benutzer.getEmail());
-        }
-        if(benutzer.getHashpasswort() != null) {
-            benutzerToUpdate.setHashpasswort(benutzer.getHashpasswort());
         }
         if(benutzer.getAdresse() != null) {
             benutzerToUpdate.setAdresse(benutzer.getAdresse());

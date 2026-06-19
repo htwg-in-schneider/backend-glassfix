@@ -54,6 +54,11 @@
 			<artifactId>mariadb-java-client</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.okta.spring</groupId>
+			<artifactId>okta-spring-boot-starter</artifactId>
+			<version>3.0.5</version>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -22,100 +22,77 @@ public class DataLoader {
     @Bean
     public CommandLineRunner loadData(AnfrageRepository anfrageRepository, BenutzerRepository benutzerRepository) {
         return args -> {
-            if (anfrageRepository.count() == 0) { // Check if the repository is empty
-                LOGGER.info("Database is empty. Loading initial data...");
-                loadInitialData(anfrageRepository, benutzerRepository);
-            } else {
-                LOGGER.info("Database already contains data. Skipping data loading.");
-            }
+            loadInitialBenutzer(benutzerRepository);
+            loadInitialData(anfrageRepository, benutzerRepository);
         };
     }
 
+    private void loadInitialBenutzer(BenutzerRepository benutzerRepository) {
+        if (benutzerRepository.findByOauthId("auth0|6a355e8047250c6aa65d405a").isEmpty()) {
+            Benutzer juanKunde = new Benutzer();
+            juanKunde.setOauthId("auth0|6a355e8047250c6aa65d405a");
+            juanKunde.setRolle(Rolle.KUNDE);
+            juanKunde.setEmail("juancerda+kunde@gmail.com");
+            benutzerRepository.save(juanKunde);
+        }
+        if (benutzerRepository.findByOauthId("auth0|6a355eb28fe62975fa6f9abf").isEmpty()) {
+            Benutzer juanExperte = new Benutzer();
+            juanExperte.setOauthId("auth0|6a355eb28fe62975fa6f9abf");
+            juanExperte.setRolle(Rolle.FACHKRAFT);
+            juanExperte.setEmail("juancerda+fachkraft@gmail.com");
+            benutzerRepository.save(juanExperte);
+        }
+        if(benutzerRepository.findByOauthId("auth0|6a355f3f47250c6aa65d4109").isEmpty()) {
+            Benutzer juanAdmin = new Benutzer();
+            juanAdmin.setOauthId("auth0|6a355f3f47250c6aa65d4109");
+            juanAdmin.setRolle(Rolle.GESCHAEFTSFUEHRER);
+            juanAdmin.setEmail("juancerda+admin@gmail.com");
+            benutzerRepository.save(juanAdmin);
+        }
+        if(benutzerRepository.findByOauthId("auth0|6a3560c147250c6aa65d42b7").isEmpty()) {
+            Benutzer romanKunde = new Benutzer();
+            romanKunde.setOauthId("auth0|6a3560c147250c6aa65d42b7");
+            romanKunde.setRolle(Rolle.KUNDE);
+            romanKunde.setEmail("romanmueller+kunde@gmail.com");
+            benutzerRepository.save(romanKunde);
+        }
+        if(benutzerRepository.findByOauthId("auth0|6a35614be52d13d7d3e5a5eb").isEmpty()) {
+            Benutzer romanExperte = new Benutzer();
+            romanExperte.setOauthId("auth0|6a35614be52d13d7d3e5a5eb");
+            romanExperte.setRolle(Rolle.FACHKRAFT);
+            romanExperte.setEmail("romanmueller+fachkraft@gmail.com");
+            benutzerRepository.save(romanExperte);
+        }
+        if(benutzerRepository.findByOauthId("auth0|6a3561c463741e31d64a4a87").isEmpty()) {
+            Benutzer romanAdmin = new Benutzer();
+            romanAdmin.setOauthId("auth0|6a3561c463741e31d64a4a87");
+            romanAdmin.setRolle(Rolle.GESCHAEFTSFUEHRER);
+            romanAdmin.setEmail("romanmueller+admin@gmail.com");
+            benutzerRepository.save(romanAdmin);
+        }
+    }
+
     private void loadInitialData(AnfrageRepository anfrageRepository, BenutzerRepository benutzerRepository) {
-        Benutzer experte1 = new Benutzer();
-        experte1.setBenutzername("Experte_1");
-        experte1.setEmail("experte1@example.com");
-        experte1.setHashpasswort("expertepasswort1");
-        experte1.setRolle(Rolle.FACHKRAFT);
-        experte1.setAdresse("Expertenstraße 1, 12345 Expertenstadt");
-        experte1.setTelefonnummer("0123456789");
-        benutzerRepository.save(experte1);
+        if (anfrageRepository.count() == 0) {
+            // Anfrage Roman Kunde
+            Benutzer kunde = benutzerRepository.findByOauthId("auth0|6a3560c147250c6aa65d42b7").orElseThrow();
+            Anfrage anfrage1 = new Anfrage();
+            anfrage1.setKunde(kunde);
+            anfrage1.setBeschreibung("Fenster ist kaputt");
+            anfrage1.setKategorie("Fenster");
+            anfrage1.setFragen("Wie ist die Größe des Fensters? Welche Art von Glas ist es? Gibt es weitere Schäden am Fenster?");
+            anfrage1.setBildUrl("https://example.com/fenster.jpg");
+            anfrageRepository.save(anfrage1);
 
-        Benutzer experte2 = new Benutzer();
-        experte2.setBenutzername("Experte_2");
-        experte2.setEmail("experte2@example.com");
-        experte2.setHashpasswort("expertepasswort2");
-        experte2.setRolle(Rolle.FACHKRAFT);
-        experte2.setAdresse("Expertenstraße 2, 12345 Expertenstadt");
-        experte2.setTelefonnummer("0123456789");
-        benutzerRepository.save(experte2);
-
-
-        Benutzer roman = new Benutzer();
-        roman.setBenutzername("Roman_Mueller");
-        roman.setEmail("roman.mueller@example.com");
-        roman.setHashpasswort("passwort123");
-        roman.setRolle(Rolle.KUNDE);
-        roman.setAdresse("Musterstraße 1, 12345 Musterstadt");
-        roman.setTelefonnummer("0123456789");
-        benutzerRepository.save(roman);
-
-        Benutzer juan = new Benutzer();
-        juan.setBenutzername("Juan_Cerda");
-        juan.setEmail("juan.cerda@example.com");
-        juan.setHashpasswort("passwort123");
-        juan.setRolle(Rolle.KUNDE);
-        juan.setAdresse("Beispielweg 2, 54321 Beispielstadt");
-        juan.setTelefonnummer("0987654321");
-        benutzerRepository.save(juan);
-
-        Benutzer max = new Benutzer();
-        max.setBenutzername("Max_Mustermann");
-        max.setEmail("max.mustermann@example.com");
-        max.setHashpasswort("passwort3");
-        max.setRolle(Rolle.KUNDE);
-        max.setAdresse("Musterstraße 3, 12345 Musterstadt");
-        max.setTelefonnummer("0123456789");
-        benutzerRepository.save(max);
-
-        Benutzer maike = new Benutzer();
-        maike.setBenutzername("Maike_Meier");
-        maike.setEmail("meike.meier@example.com");
-        maike.setHashpasswort("passwort4");
-        maike.setRolle(Rolle.KUNDE);
-        maike.setAdresse("Musterstraße 4, 12345 Musterstadt");
-        maike.setTelefonnummer("0123456789");
-        benutzerRepository.save(maike);
-
-        Anfrage anfrageRoman = new Anfrage();
-        anfrageRoman.setKategorie("Kategorie 1");
-        anfrageRoman.setKunde(roman);
-        anfrageRoman.setBeschreibung("Beschreibung 1");
-        anfrageRoman.setFragen("Fragen 1");
-        anfrageRoman.setBildUrl("https://localhost:5173/frontend-glassfix/ProjektBilder/BeforeAfterLinks.png");
-
-        Anfrage anfrageJuan = new Anfrage();
-        anfrageJuan.setKategorie("Kategorie 2");
-        anfrageJuan.setKunde(juan);
-        anfrageJuan.setBeschreibung("Beschreibung 2");
-        anfrageJuan.setFragen("Fragen 2");
-        anfrageJuan.setBildUrl("https://localhost:5173/frontend-glassfix/ProjektBilder/BeforeAfterLinks.png");
-
-        Anfrage anfrageMax = new Anfrage();
-        anfrageMax.setKategorie("Kategorie 3");
-        anfrageMax.setKunde(max);
-        anfrageMax.setBeschreibung("Beschreibung 3");
-        anfrageMax.setFragen("Fragen 3");
-        anfrageMax.setBildUrl("https://localhost:5173/frontend-glassfix/ProjektBilder/BeforeAfterLinks.png");
-
-        Anfrage anfrageMaike = new Anfrage();
-        anfrageMaike.setKategorie("Kategorie 4");
-        anfrageMaike.setKunde(maike);
-        anfrageMaike.setBeschreibung("Beschreibung 4");
-        anfrageMaike.setFragen("Fragen 4");
-        anfrageMaike.setBildUrl("https://localhost:5173/frontend-glassfix/ProjektBilder/BeforeAfterLinks.png");
-
-        anfrageRepository.saveAll(Arrays.asList(anfrageRoman, anfrageJuan, anfrageMax, anfrageMaike));
-        LOGGER.info("Initial data loaded successfully.");
+            // Anfrage Juan Kunde
+            Benutzer kunde2 = benutzerRepository.findByOauthId("auth0|6a355e8047250c6aa65d405a").orElseThrow();
+            Anfrage anfrage2 = new Anfrage();
+            anfrage2.setKunde(kunde2);
+            anfrage2.setBeschreibung("Spiegel ist gesprungen");
+            anfrage2.setKategorie("Spiegel");
+            anfrage2.setFragen("Wie groß ist der Spiegel? Welche Art von Glas ist es? Gibt es weitere Schäden am Spiegel?");
+            anfrage2.setBildUrl("https://example.com/spiegel.jpg");
+            anfrageRepository.save(anfrage2);
+        }
     }
 }

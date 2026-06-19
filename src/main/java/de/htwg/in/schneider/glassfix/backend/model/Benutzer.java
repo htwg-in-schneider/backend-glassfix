@@ -23,13 +23,8 @@ public class Benutzer {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    @Column(nullable = false, unique = true)
-    private String benutzername;
 
-    @Column(nullable = false)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String hashpasswort;
+    private String oauthId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -68,20 +63,11 @@ public class Benutzer {
         this.id = id;
     }
 
-    public String getBenutzername() {
-        return benutzername;
+    public String getOauthId() {
+        return oauthId;
     }
-
-    public void setBenutzername(String benutzername) {
-        this.benutzername = benutzername;
-    }
-
-    public String getHashpasswort() {
-        return hashpasswort;
-    }
-
-    public void setHashpasswort(String hashpasswort) {
-        this.hashpasswort = hashpasswort;
+    public void setOauthId(String oauthId) {
+        this.oauthId = oauthId;
     }
 
     public Rolle getRolle() {
