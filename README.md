@@ -110,3 +110,13 @@ In this iteration the backend was extended to support full CRUD operations for `
 - `Fachkraft` can only see and answer to the `Anfragen` he has been asseigned to.
 - When creating a new `Benutzer` the standard `Rolle` is KUNDE. Only the `GESCHAEFTSFUEHRER` can create users with other Roles.
 - tests and examples can be found in `src/test/bruno`. First is necessary to execute the GET `createLoginRequest.yml` in order to have access to the data in the database.
+
+## Iteration 8: Added user profile and spring security (OAuth2 with Auth0)
+
+- Added auth0 dependency to `pom.xml`
+- Configuration of auth0 in `applications.properties`
+- Enabling OAuth2 / Spring Security in `SecurityConfig.java`.
+- Updated `Benutzer` entity, repository and `SessionService`
+- Loading initial users in `DataLoader`.
+- New endpoint `/api/profile` via `ProfileController`.
+  - called with a valid bearer token, it loads the user data from the backend
