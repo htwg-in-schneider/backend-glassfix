@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.http.HttpSession;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -40,10 +40,15 @@ public class AnfrageService {
     @Autowired
     private BenutzerRepository benutzerRepo;
 
-    @Autowired
-    private ISessionService sessionService;
 
-    public Anfrage updateStatus(Anfrage anfrage, AnfrageStatus newStatus, HttpSession session){
+    public Anfrage updateStatus(Anfrage anfrage, AnfrageStatus newStatus, Jwt jwt) {
+        Optional<Benutzer> currentUser = benutzerRepo.findByOauthId(jwt.getSubject());
+        if (!currentUser.isPresent()) {
+            LOG.warn("No user found for JWT subject: " + jwt.getSubject());
+            throw new EntityNotFoundException("User not found.");
+        }
+        Benutzer user = currentUser.get();
+
 
         if(newStatus.getOrder() != anfrage.getStatus().getOrder() + 1){
             LOG.warn("Attempted to set a status that doesen't correspond.");
@@ -56,8 +61,8 @@ public class AnfrageService {
 
 
         if(newStatus.equals(AnfrageStatus.IN_PRUEFUNG)){
-            Benutzer experte = benutzerRepo.findById(sessionService.getUserId(session))
-                .orElseThrow(() -> new EntityNotFoundException("Experte not found. Problem with the session."));
+            Benutzer experte = benutzerRepo.findById(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Experte not found."));
             anfrage.setExperte(experte);
         }
 

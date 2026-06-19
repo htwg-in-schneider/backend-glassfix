@@ -15,7 +15,9 @@ http:
       "fragen" : "Wie kann ich das Problem beheben? Was kostet die Reparatur? Wie lange dauert die Reparatur?",
       "bildUrl" : "https://example.com/images/smartphone.jpg"
       }
-  auth: inherit
+  auth: 
+    type: bearer
+    token: ADD TOKEN OF ADMIN USER
 
 settings:
   encodeUrl: true

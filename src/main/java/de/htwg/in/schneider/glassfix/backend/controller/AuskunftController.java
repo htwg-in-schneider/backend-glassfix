@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import de.htwg.in.schneider.glassfix.backend.model.Rolle;
 import de.htwg.in.schneider.glassfix.backend.model.Anfrage;
@@ -40,29 +42,30 @@ public class AuskunftController {
     public ResponseEntity<List<Auskunft>> getAuskunft(@RequestParam(required = false) Long kundeId, 
                                                         @RequestParam(required = false) Long experteId, 
                                                         @RequestParam(required = false) AuskunftStatus status,
-                                                        HttpSession session) {
-        if(!sessionService.isLoggedIn(session)) {
+                                                        @AuthenticationPrincipal Jwt jwt) {
+        if(!sessionService.isLoggedIn(jwt)) {
+            LOG.warn("Unauthenticated access attempt to GET /api/auskunft");
             return ResponseEntity.status(401).build();
         }
 
         
-        if (sessionService.hasRole(session, Rolle.KUNDE)) {
-            if (kundeId != null && !kundeId.equals(sessionService.getUserId(session))) {
+        if (sessionService.hasRole(jwt, Rolle.KUNDE)) {
+            if (kundeId != null && !kundeId.equals(sessionService.getUserId(jwt))) {
                 LOG.warn("KUNDE with id {} attempted to filter Auskunft by kundeId {} which does not match their own id. Ignoring kundeId filter.", 
-                        sessionService.getUserId(session), 
+                        sessionService.getUserId(jwt), 
                         kundeId);
             }
-            kundeId = sessionService.getUserId(session);
+            kundeId = sessionService.getUserId(jwt);
             LOG.info("User with id {} is a KUNDE. Automatically filtering Auskunft by kundeId: {}", kundeId, kundeId);
         }
 
-        if (sessionService.hasRole(session, Rolle.FACHKRAFT)) {
-            if (experteId != null && !experteId.equals(sessionService.getUserId(session))) {
+        if (sessionService.hasRole(jwt, Rolle.FACHKRAFT)) {
+            if (experteId != null && !experteId.equals(sessionService.getUserId(jwt))) {
                 LOG.warn("FACHKRAFT with id {} attempted to filter Auskunft by experteId {} which does not match their own id. Ignoring experteId filter.", 
-                        sessionService.getUserId(session),
+                        sessionService.getUserId(jwt),
                         experteId);
             }
-            experteId = sessionService.getUserId(session);
+            experteId = sessionService.getUserId(jwt);
             LOG.info("User with id {} is a FACHKRAFT. Automatically filtering Auskunft by experteId: {}", 
                 experteId, experteId);
         }
@@ -102,30 +105,32 @@ public class AuskunftController {
     }
 
     @GetMapping("/anfrage/{anfrageId}")
-    public ResponseEntity<Auskunft> getAuskunftByAnfrageId(@PathVariable Long anfrageId, HttpSession session) {
-        if(!sessionService.isLoggedIn(session)) {
+    public ResponseEntity<Auskunft> getAuskunftByAnfrageId(@PathVariable Long anfrageId, @AuthenticationPrincipal Jwt jwt) {
+        if(!sessionService.isLoggedIn(jwt)) {
+            LOG.warn("Unauthenticated access attempt to GET /api/auskunft/anfrage/{}", anfrageId);
             return ResponseEntity.status(401).build();
         }
         Auskunft auskunft = auskunftRepository.findByAnfrageId(anfrageId);
         if (auskunft == null) {
+            LOG.warn("Auskunft for Anfrage ID {} not found.", anfrageId);
             return ResponseEntity.notFound().build();
         }
 
         Anfrage anfrage = anfrageRepository.findById(anfrageId).orElse(null);
 
-        if(sessionService.hasRole(session, Rolle.KUNDE)){
-            if (anfrage == null || !anfrage.getKunde().getId().equals(sessionService.getUserId(session))) {
+        if(sessionService.hasRole(jwt, Rolle.KUNDE)){
+            if (anfrage == null || !anfrage.getKunde().getId().equals(sessionService.getUserId(jwt))) {
                 LOG.warn("Kunde with ID {} attempted to access Auskunft for Anfrage ID {} that does not belong to them", 
-                        sessionService.getUserId(session), 
+                        sessionService.getUserId(jwt), 
                         anfrageId);
                 return ResponseEntity.status(403).build();
             }
         }
 
-        if(sessionService.hasRole(session, Rolle.FACHKRAFT)){
+        if(sessionService.hasRole(jwt, Rolle.FACHKRAFT)){
             
-            if (anfrage == null || !anfrage.getExperte().getId().equals(sessionService.getUserId(session))) {
-                LOG.warn("Fachkraft with ID {} attempted to access Auskunft for Anfrage ID {} that does not belong to them", sessionService.getUserId(session), anfrageId);
+            if (anfrage == null || !anfrage.getExperte().getId().equals(sessionService.getUserId(jwt))) {
+                LOG.warn("Fachkraft with ID {} attempted to access Auskunft for Anfrage ID {} that does not belong to them", sessionService.getUserId(jwt), anfrageId);
                 return ResponseEntity.status(403).build();
             }
         }
@@ -136,13 +141,14 @@ public class AuskunftController {
     
 
     @PutMapping("/anfrage/{anfrageId}")
-    public ResponseEntity<Auskunft> updateAuskunft(@PathVariable Long anfrageId, @RequestBody Auskunft updatedAuskunft, HttpSession session) {
-        if(!sessionService.isLoggedIn(session)) {
+    public ResponseEntity<Auskunft> updateAuskunft(@PathVariable Long anfrageId, @RequestBody Auskunft updatedAuskunft, @AuthenticationPrincipal Jwt jwt) {
+        if(!sessionService.isLoggedIn(jwt)) {
+            LOG.warn("Unauthenticated access attempt to PUT /api/auskunft/anfrage/{}", anfrageId);
             return ResponseEntity.status(401).build();
         }
-        if(sessionService.hasRole(session, Rolle.KUNDE)) {
+        if(sessionService.hasRole(jwt, Rolle.KUNDE)) {
             LOG.warn("Kunde with ID {} attempted to update Auskunft for Anfrage ID {}",
-                     sessionService.getUserId(session),
+                     sessionService.getUserId(jwt),
                       anfrageId);
             return ResponseEntity.status(403).build();
         }
@@ -151,10 +157,10 @@ public class AuskunftController {
             LOG.warn("Auskunft for Anfrage ID {} not found.", anfrageId);
             return ResponseEntity.status(404).build();
         }
-        if(sessionService.hasRole(session, Rolle.FACHKRAFT)){
-            if (!existingAuskunft.getAnfrage().getExperte().getId().equals(sessionService.getUserId(session))) {
+        if(sessionService.hasRole(jwt, Rolle.FACHKRAFT)){
+            if (!existingAuskunft.getAnfrage().getExperte().getId().equals(sessionService.getUserId(jwt))) {
                 LOG.warn("Fachkraft with ID {} attempted to update Auskunft for Anfrage ID {} that does not belong to them", 
-                        sessionService.getUserId(session),
+                        sessionService.getUserId(jwt),
                          anfrageId);
                 return ResponseEntity.status(403).build();
             }
@@ -162,10 +168,10 @@ public class AuskunftController {
 
         
 
-        if (sessionService.hasRole(session, Rolle.FACHKRAFT) ) {
+        if (sessionService.hasRole(jwt, Rolle.FACHKRAFT) ) {
             if (existingAuskunft.getPreis() != null){
                 LOG.warn("Fachkraft with ID {} attempted to update Auskunft with ID {}, which has already been added a price."
-                        , sessionService.getUserId(session),
+                        , sessionService.getUserId(jwt),
                          existingAuskunft.getId());
                 return ResponseEntity.status(403).build();
             }
@@ -177,7 +183,7 @@ public class AuskunftController {
             }
         }
 
-        if (sessionService.hasRole(session, Rolle.GESCHAEFTSFUEHRER)){
+        if (sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER)){
             if (updatedAuskunft.getPreis() != null){
                 existingAuskunft.setPreis(updatedAuskunft.getPreis());
             }
@@ -190,12 +196,17 @@ public class AuskunftController {
     }
 
     @DeleteMapping("/anfrage/{anfrageId}")
-    public ResponseEntity<Object> deleteAuskunft(@PathVariable Long anfrageId, HttpSession session){
-        if(!sessionService.isLoggedIn(session)){
+    public ResponseEntity<Object> deleteAuskunft(@PathVariable Long anfrageId, @AuthenticationPrincipal  Jwt jwt){
+        if(!sessionService.isLoggedIn(jwt)){
+            LOG.warn("Unauthenticated access attempt to DELETE /api/auskunft/anfrage/{}", anfrageId);
             return ResponseEntity.status(401).build();
         }
 
-        if(!sessionService.hasRole(session, Rolle.GESCHAEFTSFUEHRER)){
+        if(!sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER)){
+            LOG.warn("User with ID {} and role {} attempted to delete Auskunft for Anfrage ID {}. Only GESCHAEFTSFUEHRER can delete Auskunft entries.", 
+                    sessionService.getUserId(jwt), 
+                    sessionService.hasRole(jwt, Rolle.KUNDE) ? "KUNDE" : sessionService.hasRole(jwt, Rolle.FACHKRAFT) ? "FACHKRAFT" : "UNKNOWN",
+                    anfrageId);
             return ResponseEntity.status(403).build();
         }
 

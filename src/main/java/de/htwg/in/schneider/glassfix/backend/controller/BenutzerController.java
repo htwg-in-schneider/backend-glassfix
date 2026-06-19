@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import jakarta.servlet.http.HttpSession;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 
 import de.htwg.in.schneider.glassfix.backend.model.Benutzer;
 import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
@@ -34,12 +36,12 @@ public class BenutzerController {
     private ISessionService sessionService;
 
     @GetMapping
-    public ResponseEntity<List<Benutzer>> getAllBenutzer(HttpSession session) {
-        if (!sessionService.isLoggedIn(session)) {
+    public ResponseEntity<List<Benutzer>> getAllBenutzer(@AuthenticationPrincipal Jwt jwt) {
+        if (!sessionService.isLoggedIn(jwt)) {
             LOG.warn("Unauthorized attempt to fetch all benutzer. User is not logged in.");
             return ResponseEntity.status(401).build();
         }
-        if (!sessionService.hasRole(session, Rolle.GESCHAEFTSFUEHRER)){
+        if (!sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER)){
             LOG.warn("Unauthorized attempt to fetch all Benutzer. Only Geschaeftsfuehrer is allowed to fetch all Benutzer.");
             return ResponseEntity.status(403).build();
         }
@@ -50,8 +52,8 @@ public class BenutzerController {
     }
 
     @PostMapping
-    public ResponseEntity<Benutzer> createBenutzer(@RequestBody Benutzer benutzer, HttpSession session) {
-        if (!sessionService.isLoggedIn(session) || !sessionService.hasRole(session, Rolle.GESCHAEFTSFUEHRER)) {
+    public ResponseEntity<Benutzer> createBenutzer(@RequestBody Benutzer benutzer, @AuthenticationPrincipal Jwt jwt) {
+        if (!sessionService.isLoggedIn(jwt) || !sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER)) {
             benutzer.setRolle(Rolle.KUNDE);
         }
         if (benutzer.getId() != null) {
@@ -65,13 +67,13 @@ public class BenutzerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Benutzer> getBenutzerById(@PathVariable Long id, HttpSession session) {
-        if (!sessionService.isLoggedIn(session)) {
+    public ResponseEntity<Benutzer> getBenutzerById(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (!sessionService.isLoggedIn(jwt)) {
             LOG.warn("Unauthorized attempt to fetch benutzer with id {}. User is not logged in.", id);
             return ResponseEntity.status(401).build();
         }
-        if (!id.equals(sessionService.getUserId(session))) {
-            LOG.warn("Benutzer with id {} attempted to fetch benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(session), id);
+        if (!id.equals(sessionService.getUserId(jwt))) {
+            LOG.warn("Benutzer with id {} attempted to fetch benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(jwt), id);
             return ResponseEntity.status(403).build();
         }
         LOG.info("Fetching benutzer with id {}", id);
@@ -86,13 +88,13 @@ public class BenutzerController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBenutzer(@PathVariable Long id, HttpSession session) {
-        if (!sessionService.isLoggedIn(session)) {
+    public ResponseEntity<Void> deleteBenutzer(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (!sessionService.isLoggedIn(jwt)) {
             LOG.warn("Unauthorized attempt to delete benutzer with id {}. User is not logged in.", id);
             return ResponseEntity.status(401).build();
         }
-        if (!id.equals(sessionService.getUserId(session))) {
-            LOG.warn("Benutzer with id {} attempted to delete benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(session), id);
+        if (!id.equals(sessionService.getUserId(jwt))) {
+            LOG.warn("Benutzer with id {} attempted to delete benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(jwt), id);
             return ResponseEntity.status(403).build();
         }
         LOG.info("Attempting to delete benutzer with id {}", id);
@@ -106,13 +108,13 @@ public class BenutzerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Benutzer> updateBenutzer(@PathVariable Long id, @RequestBody Benutzer benutzer, HttpSession session) {
-        if (!sessionService.isLoggedIn(session)) {
+    public ResponseEntity<Benutzer> updateBenutzer(@PathVariable Long id, @RequestBody Benutzer benutzer, @AuthenticationPrincipal Jwt jwt) {
+        if (!sessionService.isLoggedIn(jwt)) {
             LOG.warn("Unauthorized attempt to update benutzer with id {}. User is not logged in.", id);
             return ResponseEntity.status(401).build();
         }
-        if (!id.equals(sessionService.getUserId(session))) {
-            LOG.warn("Benutzer with id {} attempted to update benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(session), id);
+        if (!id.equals(sessionService.getUserId(jwt))) {
+            LOG.warn("Benutzer with id {} attempted to update benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(jwt), id);
             return ResponseEntity.status(403).build();
         }
         LOG.info("Attempting to update benutzer with id {}", id);

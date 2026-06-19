@@ -4,44 +4,63 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
 import de.htwg.in.schneider.glassfix.backend.model.Benutzer;
 import de.htwg.in.schneider.glassfix.backend.model.Rolle;
+import org.springframework.security.oauth2.jwt.Jwt;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class SessionService implements ISessionService {
-    
-    private static final String USER_ROLE = "UserRole";
-    private static final String USER_OAUTH_ID = "UserOAuthId";
-    private static final String USER_ID = "UserId";
+
+    @Autowired
+    private BenutzerRepository benutzerRepository;
+
+    private static final Logger LOG = LoggerFactory.getLogger(SessionService.class);
 
     @Override
-    public boolean isLoggedIn(HttpSession session) {
-        return session.getAttribute(USER_ID) != null;
+    public boolean isLoggedIn(Jwt jwt) {
+        return jwt != null && jwt.getSubject() != null;
     }
 
     @Override
-    public boolean hasRole(HttpSession session, Rolle rolle) {
-        Rolle currentRole = (Rolle) session.getAttribute(USER_ROLE);
-        return currentRole != null && currentRole == rolle;
+    public boolean hasRole(Jwt jwt, Rolle rolle) {
+        if (jwt == null || jwt.getSubject() == null) {
+            LOG.warn("JWT or subject is null");
+            return false;
+        }
+        Optional<Benutzer> user = benutzerRepository.findByOauthId(jwt.getSubject());
+        if (!user.isPresent()) {
+            LOG.warn("No user found for JWT subject: " + jwt.getSubject());
+            return false;
+        }
+        boolean hasRole = user.get().getRolle() == rolle;
+        LOG.info("User with OauthId " + jwt.getSubject() + " has role " + user.get().getRolle() + ". Required role: " + rolle + ". Has required role: " + hasRole);
+        return hasRole;
     }
 
     @Override
-    public String getOauthId(HttpSession session) {
-        return (String) session.getAttribute(USER_OAUTH_ID);
+    public String getOauthId(Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            LOG.warn("JWT or subject is null");
+            return null;
+        }
+        
+        return jwt.getSubject();
     }
 
     @Override
-    public Long getUserId(HttpSession session) {
-        return (Long) session.getAttribute(USER_ID);
-    }
-
-    @Override
-    public void addSession(HttpSession session, Benutzer benutzer) {
-        session.setAttribute(USER_OAUTH_ID, benutzer.getOauthId());
-        session.setAttribute(USER_ROLE, benutzer.getRolle());
-        session.setAttribute(USER_ID, benutzer.getId());
-    }
-
-    @Override
-    public void removeSession(HttpSession session) {
-        session.invalidate();
+    public Long getUserId(Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            LOG.warn("JWT or subject is null");
+            return null;
+        }
+        Optional<Benutzer> user = benutzerRepository.findByOauthId(jwt.getSubject());
+        if (!user.isPresent()) {
+            LOG.warn("No user found for JWT subject: " + jwt.getSubject());
+            return null;
+        }
+        return user.get().getId();
     }
 }

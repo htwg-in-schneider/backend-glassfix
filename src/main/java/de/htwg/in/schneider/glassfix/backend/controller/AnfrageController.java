@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import de.htwg.in.schneider.glassfix.backend.model.Rolle;
 import de.htwg.in.schneider.glassfix.backend.model.Benutzer;
@@ -42,26 +44,28 @@ public class AnfrageController {
     @GetMapping
     public ResponseEntity<List<Anfrage>> getAnfragen(@RequestParam(required = false) AnfrageStatus status, 
                                         @RequestParam(required = false) Long kundeId, 
-                                        @RequestParam(required = false) Long experteId, HttpSession session) {
+                                        @RequestParam(required = false) Long experteId, @AuthenticationPrincipal Jwt jwt) {
         
-        if (!sessionService.isLoggedIn(session)) {
+        if (!sessionService.isLoggedIn(jwt)) {
             LOG.warn("Unauthorized attempt to fetch anfragen. User is not logged in.");
             return ResponseEntity.status(401).build();
         }
 
-        if (sessionService.hasRole(session, Rolle.KUNDE)) {
-            if (kundeId != null && !kundeId.equals(sessionService.getUserId(session))) {
-                LOG.warn("KUNDE with id {} attempted to filter anfragen by kundeId {} which does not match their own id. Ignoring kundeId filter.", sessionService.getUserId(session), kundeId);
+        if (sessionService.hasRole(jwt, Rolle.KUNDE)) {
+            if (kundeId != null && !kundeId.equals(sessionService.getUserId(jwt))) {
+                LOG.warn("KUNDE with id {} attempted to filter anfragen by kundeId {} which does not match their own id. Ignoring kundeId filter.", sessionService.getUserId(jwt), kundeId);
             }
-            kundeId = sessionService.getUserId(session);
+            kundeId = sessionService.getUserId(jwt);
             LOG.info("User with id {} is a KUNDE. Automatically filtering anfragen by kundeId: {}", kundeId, kundeId);
         }
 
-        if (sessionService.hasRole(session, Rolle.FACHKRAFT)) {
-            if (experteId != null && !experteId.equals(sessionService.getUserId(session))) {
-                LOG.warn("FACHKRAFT with id {} attempted to filter anfragen by experteId {} which does not match their own id. Ignoring filter.", sessionService.getUserId(session), experteId);
+        if (sessionService.hasRole(jwt, Rolle.FACHKRAFT)) {
+            if (experteId != null && !experteId.equals(sessionService.getUserId(jwt))) {
+                LOG.warn("FACHKRAFT with id {} attempted to filter anfragen by experteId {} which does not match their own id. Ignoring filter.", sessionService.getUserId(jwt), experteId);
+                experteId = sessionService.getUserId(jwt);
+            }
+            if (experteId == null) {
                 status = AnfrageStatus.ERSTELLT;
-                experteId = null;
             }
         }
 
@@ -100,14 +104,14 @@ public class AnfrageController {
     }
 
     @PostMapping
-    public ResponseEntity<Anfrage> createAnfrage(@RequestBody Anfrage anfrage, HttpSession session) {
+    public ResponseEntity<Anfrage> createAnfrage(@RequestBody Anfrage anfrage, @AuthenticationPrincipal Jwt jwt) {
 
-        if (!sessionService.isLoggedIn(session) || !sessionService.hasRole(session, Rolle.KUNDE)) {
+        if (!sessionService.isLoggedIn(jwt) || !sessionService.hasRole(jwt, Rolle.KUNDE)) {
             LOG.warn("Unauthorized attempt to create anfrage. User is not logged in or does not have the required role.");
             return ResponseEntity.status(401).build();
         }
 
-        Long kundeId = sessionService.getUserId(session);
+        Long kundeId = sessionService.getUserId(jwt);
         Benutzer kunde = benutzerRepository.findById(kundeId).orElse(null);
         if (kunde == null) {
             LOG.warn("No kunde found with id " + kundeId + " from session. Cannot create anfrage.");
@@ -130,21 +134,21 @@ public class AnfrageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Anfrage> getAnfrageById(@PathVariable Long id, HttpSession session){
-        if (!sessionService.isLoggedIn(session)){
+    public ResponseEntity<Anfrage> getAnfrageById(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
+        if (!sessionService.isLoggedIn(jwt)){
             return ResponseEntity.status(401).build();
         }
         Optional<Anfrage> anfrage = anfrageRepository.findById(id);
         if (anfrage.isPresent()) {
-            if (sessionService.hasRole(session, Rolle.KUNDE)){
-                if(!anfrage.get().getKunde().getId().equals(sessionService.getUserId(session))){
-                    LOG.warn("Kunde with ID {} attempted to see an Anfrage not of its own.", sessionService.getUserId(session));
+            if (sessionService.hasRole(jwt, Rolle.KUNDE)){
+                if(!anfrage.get().getKunde().getId().equals(sessionService.getUserId(jwt))){
+                    LOG.warn("Kunde with ID {} attempted to see an Anfrage not of its own.", sessionService.getUserId(jwt));
                     return ResponseEntity.status(403).build();
                 }
             }
-            if(sessionService.hasRole(session, Rolle.FACHKRAFT)){
-                if(!anfrage.get().getExperte().getId().equals(sessionService.getUserId(session))){
-                    LOG.warn("Fachkraft with ID {} attemted to see an Anfrage he is not part of.", sessionService.getUserId(session));
+            if(sessionService.hasRole(jwt, Rolle.FACHKRAFT)){
+                if(!anfrage.get().getExperte().getId().equals(sessionService.getUserId(jwt))){
+                    LOG.warn("Fachkraft with ID {} attemted to see an Anfrage he is not part of.", sessionService.getUserId(jwt));
                     return ResponseEntity.status(403).build();
                 }
             }
@@ -158,28 +162,28 @@ public class AnfrageController {
     
 
    @PutMapping("/{id}")
-    public ResponseEntity<Anfrage> updateAnfrage(@PathVariable Long id, @RequestBody Anfrage updatedAnfrage, HttpSession session) {
+    public ResponseEntity<Anfrage> updateAnfrage(@PathVariable Long id, @RequestBody Anfrage updatedAnfrage, @AuthenticationPrincipal Jwt jwt) {
     Optional<Anfrage> existingAnfrage = anfrageRepository.findById(id);
     
         if (!existingAnfrage.isPresent()) {
             return ResponseEntity.notFound().build();
         }
 
-        if (!sessionService.isLoggedIn(session)) {
+        if (!sessionService.isLoggedIn(jwt)) {
             return ResponseEntity.status(401).build();
         }
 
         Anfrage anfrageToUpdate = existingAnfrage.get();
 
         try {
-            if (sessionService.hasRole(session, Rolle.KUNDE)) {
+            if (sessionService.hasRole(jwt, Rolle.KUNDE)) {
                 // Kunden dürfen nur eigene Anfragen bearbeiten, und nur bestimmte Felder (Kategorie, Beschreibung, BildUrl, Fragen)
-                if (!anfrageToUpdate.getKunde().getId().equals(sessionService.getUserId(session))) {
+                if (!anfrageToUpdate.getKunde().getId().equals(sessionService.getUserId(jwt))) {
                     return ResponseEntity.status(403).build();
                 }
 
                 if(!anfrageToUpdate.getStatus().equals(AnfrageStatus.ERSTELLT)){
-                    LOG.warn("Kunde with ID {} tried to update Anfrage, which is no longer available for updates.", sessionService.getUserId(session));
+                    LOG.warn("Kunde with ID {} tried to update Anfrage, which is no longer available for updates.", sessionService.getUserId(jwt));
                     return ResponseEntity.status(403).build();
                 }
                 
@@ -189,16 +193,16 @@ public class AnfrageController {
                 if (updatedAnfrage.getFragen() != null) anfrageToUpdate.setFragen(updatedAnfrage.getFragen());
             }
  
-            if (sessionService.hasRole(session, Rolle.FACHKRAFT)) {
+            if (sessionService.hasRole(jwt, Rolle.FACHKRAFT)) {
                 // Eigene Anfragen dürfen nur FACHKRAFT bearbeiten, und nur bestimmte Felder (Antwort)
-                    if (anfrageToUpdate.getExperte() != null && !anfrageToUpdate.getExperte().getId().equals(sessionService.getUserId(session))) {
+                    if (anfrageToUpdate.getExperte() != null && !anfrageToUpdate.getExperte().getId().equals(sessionService.getUserId(jwt))) {
                         return ResponseEntity.status(403).build();
                     }
                 if (updatedAnfrage.getAntwort() != null) {
                     anfrageToUpdate.setAntwort(updatedAnfrage.getAntwort());
                 }
                 if (updatedAnfrage.getStatus() != null && updatedAnfrage.getStatus() != anfrageToUpdate.getStatus()) {
-                    anfrageService.updateStatus(anfrageToUpdate, updatedAnfrage.getStatus(), session);
+                    anfrageService.updateStatus(anfrageToUpdate, updatedAnfrage.getStatus(), jwt);
                 }
             }
             
@@ -216,12 +220,12 @@ public class AnfrageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteAnfrage(@PathVariable Long id, HttpSession session) {
-        if (!sessionService.isLoggedIn(session)) {
+    public ResponseEntity<Object> deleteAnfrage(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (!sessionService.isLoggedIn(jwt)) {
             return ResponseEntity.status(401).build();
         }
 
-        if(sessionService.hasRole(session, Rolle.FACHKRAFT)){
+        if(sessionService.hasRole(jwt, Rolle.FACHKRAFT)){
             return ResponseEntity.status(403).build();
         }
 
@@ -231,7 +235,7 @@ public class AnfrageController {
             return ResponseEntity.notFound().build();
         } 
 
-        if (sessionService.hasRole(session, Rolle.KUNDE) && !anfrage.get().getKunde().getId().equals(sessionService.getUserId(session))) {
+        if (sessionService.hasRole(jwt, Rolle.KUNDE) && !anfrage.get().getKunde().getId().equals(sessionService.getUserId(jwt))) {
             return ResponseEntity.status(403).build();
         }
 

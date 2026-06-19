@@ -120,3 +120,10 @@ In this iteration the backend was extended to support full CRUD operations for `
 - Loading initial users in `DataLoader`.
 - New endpoint `/api/profile` via `ProfileController`.
   - called with a valid bearer token, it loads the user data from the backend
+
+## Iteration 9: Requiring role privileges for anfrage, auskunft and benutzer creation, update and deletion
+
+- Updated `SecurityConfig.java` to require authenticated access to POST, PUT, and DELETE methods on `/api/anfrage/**`,  `/api/benutzer/**`, `/api/auskunft/**`
+- Checking for  role for callers of POST, PUT, and DELETE methods on `/api/anfrage/**` in `AnfrageController.java`
+- Checking for  role for callers of POST, PUT, and DELETE methods on `/api/auskunft/**` in `AuskunftController.java`
+- Checking for  role for callers of POST, PUT, and DELETE methods on `/api/benutzer/**` in `BenutzerController.java`
