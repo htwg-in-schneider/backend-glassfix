@@ -30,6 +30,9 @@ public class Benutzer {
     @Column(nullable = false)
     private Rolle rolle;
 
+    @Column(nullable = false)
+    private String name;
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -76,6 +79,12 @@ public class Benutzer {
 
     public void setRolle(Rolle rolle) {
         this.rolle = rolle;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {

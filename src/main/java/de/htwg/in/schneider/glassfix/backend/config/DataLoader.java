@@ -32,6 +32,7 @@ public class DataLoader {
             Benutzer juanKunde = new Benutzer();
             juanKunde.setOauthId("auth0|6a355e8047250c6aa65d405a");
             juanKunde.setRolle(Rolle.KUNDE);
+            juanKunde.setName("Juan Kunde");
             juanKunde.setEmail("juancerda+kunde@gmail.com");
             benutzerRepository.save(juanKunde);
         }
@@ -39,6 +40,7 @@ public class DataLoader {
             Benutzer juanExperte = new Benutzer();
             juanExperte.setOauthId("auth0|6a355eb28fe62975fa6f9abf");
             juanExperte.setRolle(Rolle.FACHKRAFT);
+            juanExperte.setName("Juan Experte");
             juanExperte.setEmail("juancerda+fachkraft@gmail.com");
             benutzerRepository.save(juanExperte);
         }
@@ -46,6 +48,7 @@ public class DataLoader {
             Benutzer juanAdmin = new Benutzer();
             juanAdmin.setOauthId("auth0|6a355f3f47250c6aa65d4109");
             juanAdmin.setRolle(Rolle.GESCHAEFTSFUEHRER);
+            juanAdmin.setName("Juan Admin");
             juanAdmin.setEmail("juancerda+admin@gmail.com");
             benutzerRepository.save(juanAdmin);
         }
@@ -53,6 +56,7 @@ public class DataLoader {
             Benutzer romanKunde = new Benutzer();
             romanKunde.setOauthId("auth0|6a3560c147250c6aa65d42b7");
             romanKunde.setRolle(Rolle.KUNDE);
+            romanKunde.setName("Roman Kunde");
             romanKunde.setEmail("romanmueller+kunde@gmail.com");
             benutzerRepository.save(romanKunde);
         }
@@ -60,6 +64,7 @@ public class DataLoader {
             Benutzer romanExperte = new Benutzer();
             romanExperte.setOauthId("auth0|6a35614be52d13d7d3e5a5eb");
             romanExperte.setRolle(Rolle.FACHKRAFT);
+            romanExperte.setName("Roman Experte");
             romanExperte.setEmail("romanmueller+fachkraft@gmail.com");
             benutzerRepository.save(romanExperte);
         }
@@ -67,6 +72,7 @@ public class DataLoader {
             Benutzer romanAdmin = new Benutzer();
             romanAdmin.setOauthId("auth0|6a3561c463741e31d64a4a87");
             romanAdmin.setRolle(Rolle.GESCHAEFTSFUEHRER);
+            romanAdmin.setName("Roman Admin");
             romanAdmin.setEmail("romanmueller+admin@gmail.com");
             benutzerRepository.save(romanAdmin);
         }

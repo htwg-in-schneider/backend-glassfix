@@ -64,9 +64,6 @@ public class AnfrageController {
                 LOG.warn("FACHKRAFT with id {} attempted to filter anfragen by experteId {} which does not match their own id. Ignoring filter.", sessionService.getUserId(jwt), experteId);
                 experteId = sessionService.getUserId(jwt);
             }
-            if (experteId == null) {
-                status = AnfrageStatus.ERSTELLT;
-            }
         }
 
 
@@ -147,7 +144,7 @@ public class AnfrageController {
                 }
             }
             if(sessionService.hasRole(jwt, Rolle.FACHKRAFT)){
-                if(!anfrage.get().getExperte().getId().equals(sessionService.getUserId(jwt))){
+                if(anfrage.get().getExperte() != null && !anfrage.get().getExperte().getId().equals(sessionService.getUserId(jwt))){
                     LOG.warn("Fachkraft with ID {} attemted to see an Anfrage he is not part of.", sessionService.getUserId(jwt));
                     return ResponseEntity.status(403).build();
                 }

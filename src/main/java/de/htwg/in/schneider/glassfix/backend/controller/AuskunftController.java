@@ -55,7 +55,12 @@ public class AuskunftController {
                         sessionService.getUserId(jwt), 
                         kundeId);
             }
+            if(status == AuskunftStatus.IN_BEARBEITUNG){
+                LOG.info("User with id {} is a KUNDE and tried to filter by IN_BEARBEITUNG. Automatically filtering Auskunft by status: ANGEEBOT_VORHANDEN", sessionService.getUserId(jwt));
+                status = AuskunftStatus.ANGEBOT_VORHANDEN;
+            }
             kundeId = sessionService.getUserId(jwt);
+             // Kunden dürfen nur offene Anfragen sehen
             LOG.info("User with id {} is a KUNDE. Automatically filtering Auskunft by kundeId: {}", kundeId, kundeId);
         }
 
