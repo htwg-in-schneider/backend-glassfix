@@ -21,6 +21,7 @@ import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
 import de.htwg.in.schneider.glassfix.backend.service.ISessionService;
 import de.htwg.in.schneider.glassfix.backend.service.AnfrageService;
 import jakarta.servlet.http.HttpSession;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/anfrage")
@@ -60,10 +61,27 @@ public class AnfrageController {
         }
 
         if (sessionService.hasRole(jwt, Rolle.FACHKRAFT)) {
+            
+            Long userid = sessionService.getUserId(jwt);
+            final Long fkid = kundeId;
+
+            if(experteId == null && status == null){
+                List<Anfrage> listExpert;
+                listExpert = anfrageRepository.findByStatus(AnfrageStatus.ERSTELLT);
+                listExpert.addAll(anfrageRepository.findByExperteId(userid));
+                if (fkid != null){
+                    listExpert = listExpert.stream()
+                                            .filter(a -> a.getKunde().getId().equals(fkid))
+                                            .distinct()
+                                            .collect(Collectors.toList());
+                }
+                return ResponseEntity.ok(listExpert);
+            }
+
             if (experteId != null && !experteId.equals(sessionService.getUserId(jwt))) {
                 LOG.warn("FACHKRAFT with id {} attempted to filter anfragen by experteId {} which does not match their own id. Ignoring filter.", sessionService.getUserId(jwt), experteId);
-                experteId = sessionService.getUserId(jwt);
             }
+            experteId = userid;
         }
 
 

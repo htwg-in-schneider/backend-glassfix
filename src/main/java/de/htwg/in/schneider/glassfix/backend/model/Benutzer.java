@@ -1,6 +1,7 @@
 package de.htwg.in.schneider.glassfix.backend.model;
 
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -24,6 +25,7 @@ public class Benutzer {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @JsonIgnore
     private String oauthId;
 
     @Enumerated(EnumType.STRING)
@@ -38,6 +40,7 @@ public class Benutzer {
 
     @CreationTimestamp
     @Column(name= "registrierungsdatum", updatable = false, nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime registrierungsdatum;
 
     private String adresse;

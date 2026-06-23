@@ -124,6 +124,10 @@ public class BenutzerController {
             return ResponseEntity.notFound().build();
         }
         Benutzer benutzerToUpdate = existingBenutzer.get();
+
+        if(benutzer.getName() != null ){
+            benutzerToUpdate.setName(benutzer.getName());
+        }
         
         if(benutzer.getEmail() != null) {
             benutzerToUpdate.setEmail(benutzer.getEmail());

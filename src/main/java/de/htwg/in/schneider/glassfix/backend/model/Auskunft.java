@@ -18,6 +18,7 @@ import jakarta.persistence.PrePersist;
 
 import de.htwg.in.schneider.glassfix.backend.model.Anfrage;
 import de.htwg.in.schneider.glassfix.backend.model.AuskunftStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 
@@ -40,6 +41,7 @@ public class Auskunft {
 
     @CreationTimestamp
     @Column(name= "erstellungsdatum", updatable = false, nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime erstellungsdatum;
 
     private boolean istFreigegeben;
