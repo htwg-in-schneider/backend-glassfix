@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.ElementCollection;
 
 import de.htwg.in.schneider.glassfix.backend.model.Anfrage;
 import de.htwg.in.schneider.glassfix.backend.model.AuskunftStatus;
@@ -35,8 +36,12 @@ public class Auskunft {
 
     private Double preis;
 
+    private String reparaturEmpfehlung;
+
     private Integer zeitEinschaetzung; // in Stunden
 
+
+    @ElementCollection
     private List<String> arbeitsschritte;
 
     @CreationTimestamp
@@ -44,7 +49,9 @@ public class Auskunft {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime erstellungsdatum;
 
-    private boolean istFreigegeben;
+    private Boolean istFreigegeben;
+
+    private Boolean vonExperteBearbeitet;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -72,6 +79,14 @@ public class Auskunft {
         this.preis = preis;
     }
 
+    public String getReparaturEmpfehlung(){
+        return this.reparaturEmpfehlung;
+    }
+
+    public void setReparaturEmpfehlung(String repemp){
+        this.reparaturEmpfehlung = repemp;
+    }
+
     public Integer getZeitEinschaetzung() {
         return zeitEinschaetzung;
     }
@@ -92,12 +107,20 @@ public class Auskunft {
         return erstellungsdatum;
     }
 
-    public boolean isIstFreigegeben() {
+    public Boolean isIstFreigegeben() {
         return istFreigegeben;
     }
 
-    public void setIstFreigegeben(boolean istFreigegeben) {
+    public void setIstFreigegeben(Boolean istFreigegeben) {
         this.istFreigegeben = istFreigegeben;
+    }
+
+    public Boolean getVonExperteBearbeitet(){
+        return this.vonExperteBearbeitet;
+    }
+
+    public void setVonExperteBearbeitet(Boolean veb){
+        this.vonExperteBearbeitet = veb;
     }
 
     public AuskunftStatus getStatus() {

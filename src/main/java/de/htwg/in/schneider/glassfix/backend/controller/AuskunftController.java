@@ -180,11 +180,21 @@ public class AuskunftController {
                          existingAuskunft.getId());
                 return ResponseEntity.status(403).build();
             }
+            if (updatedAuskunft.getReparaturEmpfehlung() != null) {
+                existingAuskunft.setReparaturEmpfehlung(updatedAuskunft.getReparaturEmpfehlung());
+            }
             if (updatedAuskunft.getZeitEinschaetzung() != null){
                 existingAuskunft.setZeitEinschaetzung(updatedAuskunft.getZeitEinschaetzung());
             }
             if (updatedAuskunft.getArbeitsschritte() != null){
                 existingAuskunft.setArbeitsschritte(updatedAuskunft.getArbeitsschritte());
+            }
+            if (updatedAuskunft.getVonExperteBearbeitet() != null && updatedAuskunft.getVonExperteBearbeitet()) {
+                if (existingAuskunft.getVonExperteBearbeitet() != null && existingAuskunft.getVonExperteBearbeitet()) {
+                    LOG.warn("Fachkraft tried to update Auskunft already sent to admin.");
+                    return ResponseEntity.status(403).build();
+                }
+                existingAuskunft.setVonExperteBearbeitet(true);
             }
         }
 
