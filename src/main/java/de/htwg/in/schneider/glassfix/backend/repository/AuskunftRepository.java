@@ -11,7 +11,7 @@ import java.util.List;
 public interface AuskunftRepository extends JpaRepository<Auskunft, Long> {
     Auskunft findByAnfrageId(Long anfrageId);
     List<Auskunft> findByStatus(AuskunftStatus status);
-    List<Auskunft> findByIstFreigegeben(boolean istFreigegeben);
+    List<Auskunft> findByIstFreigegeben(Boolean istFreigegeben);
     List<Auskunft> findByAnfrageKundeId(Long kundeId);
     List<Auskunft> findByAnfrageExperteId(Long experteId);
     List<Auskunft> findByStatusAndAnfrageKundeId(AuskunftStatus status, Long kundeId);

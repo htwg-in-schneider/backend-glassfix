@@ -11,8 +11,10 @@ import org.springframework.context.annotation.Configuration;
 import de.htwg.in.schneider.glassfix.backend.model.Anfrage;
 import de.htwg.in.schneider.glassfix.backend.model.Benutzer;
 import de.htwg.in.schneider.glassfix.backend.model.Rolle;
+import de.htwg.in.schneider.glassfix.backend.model.Kategorie;
 import de.htwg.in.schneider.glassfix.backend.repository.AnfrageRepository;
 import de.htwg.in.schneider.glassfix.backend.repository.BenutzerRepository;
+import de.htwg.in.schneider.glassfix.backend.repository.KategorieRepository;
 
 @Configuration
 public class DataLoader {
@@ -20,10 +22,11 @@ public class DataLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataLoader.class);
 
     @Bean
-    public CommandLineRunner loadData(AnfrageRepository anfrageRepository, BenutzerRepository benutzerRepository) {
+    public CommandLineRunner loadData(AnfrageRepository anfrageRepository, BenutzerRepository benutzerRepository, KategorieRepository kategorieRepository) {
         return args -> {
             loadInitialBenutzer(benutzerRepository);
             loadInitialData(anfrageRepository, benutzerRepository);
+            loadInitialKategorien(kategorieRepository);
         };
     }
 
@@ -57,7 +60,7 @@ public class DataLoader {
             Benutzer juanAdmin = new Benutzer();
             juanAdmin.setOauthId("auth0|6a355f3f47250c6aa65d4109");
             juanAdmin.setRolle(Rolle.GESCHAEFTSFUEHRER);
-            juanAdmin.setName("Juan Admin");
+            juanAdmin.setName("Juan GF");
             juanAdmin.setEmail("juancerda+admin@gmail.com");
             benutzerRepository.save(juanAdmin);
         }
@@ -81,9 +84,18 @@ public class DataLoader {
             Benutzer romanAdmin = new Benutzer();
             romanAdmin.setOauthId("auth0|6a3561c463741e31d64a4a87");
             romanAdmin.setRolle(Rolle.GESCHAEFTSFUEHRER);
-            romanAdmin.setName("Roman Admin");
+            romanAdmin.setName("Roman GF");
             romanAdmin.setEmail("romanmueller+admin@gmail.com");
             benutzerRepository.save(romanAdmin);
+        }
+    }
+
+    private void loadInitialKategorien(KategorieRepository kategorieRepository) {
+        if (kategorieRepository.count() == 0) {
+            kategorieRepository.save(new Kategorie("Trinkglas", "Schäden an Trinkgläsern, Kratzern oder Glasrändern"));
+            kategorieRepository.save(new Kategorie("Fensterglas", "Schäden an Fenstern oder Scheibenglas"));
+            kategorieRepository.save(new Kategorie("Vase", "Schäden an Glasvasen"));
+            kategorieRepository.save(new Kategorie("Spiegel", "Schäden an Spiegelglas"));
         }
     }
 
@@ -94,7 +106,7 @@ public class DataLoader {
             Anfrage anfrage1 = new Anfrage();
             anfrage1.setKunde(kunde);
             anfrage1.setBeschreibung("Fenster ist kaputt");
-            anfrage1.setKategorie("Fenster");
+            anfrage1.setKategorie("Fensterglas");
             anfrage1.setFragen("Wie ist die Größe des Fensters? Welche Art von Glas ist es? Gibt es weitere Schäden am Fenster?");
             anfrage1.setBildUrl("/AuftragBspBilder/VaseKratzer.png");
             anfrageRepository.save(anfrage1);

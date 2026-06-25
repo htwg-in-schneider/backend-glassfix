@@ -21,14 +21,22 @@ public class SecurityConfig {
         return http
                 .cors(withDefaults())
                 .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers(HttpMethod.GET, "/api/kategorien", "/api/kategorien/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/kategorien").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/kategorien/*").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/kategorien/*").authenticated()
+
                         .requestMatchers("/api/profile").authenticated()
+
                         .requestMatchers(HttpMethod.POST, "/api/anfrage", "/api/anfrage/*").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/anfrage/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/anfrage/*").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/anfrage", "/api/anfrage/*").authenticated()
+
                         .requestMatchers(HttpMethod.PUT, "/api/auskunft/anfrage/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/auskunft/anfrage/*").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/auskunft", "/api/auskunft/anfrage/*").authenticated()
+                        
                         .requestMatchers(HttpMethod.POST, "/api/benutzer").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/benutzer/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/benutzer/*").authenticated()
