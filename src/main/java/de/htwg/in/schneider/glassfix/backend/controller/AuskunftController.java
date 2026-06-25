@@ -168,7 +168,7 @@ public class AuskunftController {
         
 
         if (sessionService.hasRole(jwt, Rolle.FACHKRAFT) || sessionService.hasRole(jwt, Rolle.ADMIN) ) {
-            if (existingAuskunft.getPreis() != null){
+            if (sessionService.hasRole(jwt, Rolle.FACHKRAFT) && existingAuskunft.getPreis() != null){
                 LOG.warn("Fachkraft with ID {} attempted to update Auskunft with ID {}, which has already been added a price."
                         , sessionService.getUserId(jwt),
                          existingAuskunft.getId());
