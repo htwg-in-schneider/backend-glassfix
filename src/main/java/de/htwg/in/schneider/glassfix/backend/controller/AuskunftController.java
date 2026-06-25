@@ -151,12 +151,6 @@ public class AuskunftController {
             LOG.warn("Unauthenticated access attempt to PUT /api/auskunft/anfrage/{}", anfrageId);
             return ResponseEntity.status(401).build();
         }
-        if(sessionService.hasRole(jwt, Rolle.KUNDE)) {
-            LOG.warn("Kunde with ID {} attempted to update Auskunft for Anfrage ID {}",
-                     sessionService.getUserId(jwt),
-                      anfrageId);
-            return ResponseEntity.status(403).build();
-        }
         Auskunft existingAuskunft = auskunftRepository.findByAnfrageId(anfrageId);
         if (existingAuskunft == null) {
             LOG.warn("Auskunft for Anfrage ID {} not found.", anfrageId);
@@ -173,7 +167,7 @@ public class AuskunftController {
 
         
 
-        if (sessionService.hasRole(jwt, Rolle.FACHKRAFT) ) {
+        if (sessionService.hasRole(jwt, Rolle.FACHKRAFT) || sessionService.hasRole(jwt, Rolle.ADMIN) ) {
             if (existingAuskunft.getPreis() != null){
                 LOG.warn("Fachkraft with ID {} attempted to update Auskunft with ID {}, which has already been added a price."
                         , sessionService.getUserId(jwt),
@@ -198,9 +192,22 @@ public class AuskunftController {
             }
         }
 
-        if (sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER)){
+        if (sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER) || sessionService.hasRole(jwt, Rolle.ADMIN)){
             if (updatedAuskunft.getPreis() != null){
                 existingAuskunft.setPreis(updatedAuskunft.getPreis());
+            }
+            if(updatedAuskunft.getStatus() != null && updatedAuskunft.getStatus() == AuskunftStatus.ANGEBOT_VORHANDEN){
+                existingAuskunft.setStatus(updatedAuskunft.getStatus());
+            }
+            if(updatedAuskunft.getIstFreigegeben() != null && (existingAuskunft.getIstFreigegeben() == null || existingAuskunft.getIstFreigegeben() == false)){
+                existingAuskunft.setIstFreigegeben(updatedAuskunft.getIstFreigegeben());
+            }
+            
+        }
+
+        if (sessionService.hasRole(jwt, Rolle.KUNDE) || sessionService.hasRole(jwt, Rolle.ADMIN)){
+            if(updatedAuskunft.getStatus() != null && (updatedAuskunft.getStatus() == AuskunftStatus.ANGENOMMEN || updatedAuskunft.getStatus() == AuskunftStatus.ABGELEHNT)){
+                existingAuskunft.setStatus(updatedAuskunft.getStatus());
             }
             
         }
@@ -217,7 +224,7 @@ public class AuskunftController {
             return ResponseEntity.status(401).build();
         }
 
-        if(!sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER)){
+        if(!sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER) && !sessionService.hasRole(jwt, Rolle.ADMIN)){
             LOG.warn("User with ID {} and role {} attempted to delete Auskunft for Anfrage ID {}. Only GESCHAEFTSFUEHRER can delete Auskunft entries.", 
                     sessionService.getUserId(jwt), 
                     sessionService.hasRole(jwt, Rolle.KUNDE) ? "KUNDE" : sessionService.hasRole(jwt, Rolle.FACHKRAFT) ? "FACHKRAFT" : "UNKNOWN",

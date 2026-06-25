@@ -28,6 +28,15 @@ public class DataLoader {
     }
 
     private void loadInitialBenutzer(BenutzerRepository benutzerRepository) {
+        if(benutzerRepository.findByOauthId("auth0|6a3c77723f066f10a68e55aa").isEmpty()){
+            Benutzer juanADMIN = new Benutzer();
+            juanADMIN.setOauthId("auth0|6a3c77723f066f10a68e55aa");
+            juanADMIN.setRolle(Rolle.ADMIN);
+            juanADMIN.setName("Juan ADMIN");
+            juanADMIN.setEmail("ja+admin@gmail.com");
+            benutzerRepository.save(juanADMIN);
+        }
+
         if (benutzerRepository.findByOauthId("auth0|6a355e8047250c6aa65d405a").isEmpty()) {
             Benutzer juanKunde = new Benutzer();
             juanKunde.setOauthId("auth0|6a355e8047250c6aa65d405a");
@@ -87,7 +96,7 @@ public class DataLoader {
             anfrage1.setBeschreibung("Fenster ist kaputt");
             anfrage1.setKategorie("Fenster");
             anfrage1.setFragen("Wie ist die Größe des Fensters? Welche Art von Glas ist es? Gibt es weitere Schäden am Fenster?");
-            anfrage1.setBildUrl("https://example.com/fenster.jpg");
+            anfrage1.setBildUrl("/AuftragBspBilder/VaseKratzer.png");
             anfrageRepository.save(anfrage1);
 
             // Anfrage Juan Kunde
@@ -97,7 +106,7 @@ public class DataLoader {
             anfrage2.setBeschreibung("Spiegel ist gesprungen");
             anfrage2.setKategorie("Spiegel");
             anfrage2.setFragen("Wie groß ist der Spiegel? Welche Art von Glas ist es? Gibt es weitere Schäden am Spiegel?");
-            anfrage2.setBildUrl("https://example.com/spiegel.jpg");
+            anfrage2.setBildUrl("/AuftragBspBilder/VaseRand.png");
             anfrageRepository.save(anfrage2);
         }
     }

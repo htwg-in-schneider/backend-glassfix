@@ -107,7 +107,7 @@ public class Auskunft {
         return erstellungsdatum;
     }
 
-    public Boolean isIstFreigegeben() {
+    public Boolean getIstFreigegeben() {
         return istFreigegeben;
     }
 

@@ -41,8 +41,8 @@ public class BenutzerController {
             LOG.warn("Unauthorized attempt to fetch all benutzer. User is not logged in.");
             return ResponseEntity.status(401).build();
         }
-        if (!sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER)){
-            LOG.warn("Unauthorized attempt to fetch all Benutzer. Only Geschaeftsfuehrer is allowed to fetch all Benutzer.");
+        if (!sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER) || !sessionService.hasRole(jwt, Rolle.ADMIN)){
+            LOG.warn("Unauthorized attempt to fetch all Benutzer. Only Geschaeftsfuehrer and ADMIN are allowed to fetch all Benutzer.");
             return ResponseEntity.status(403).build();
         }
         LOG.info("Fetching all benutzer");
@@ -53,7 +53,7 @@ public class BenutzerController {
 
     @PostMapping
     public ResponseEntity<Benutzer> createBenutzer(@RequestBody Benutzer benutzer, @AuthenticationPrincipal Jwt jwt) {
-        if (!sessionService.isLoggedIn(jwt) || !sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER)) {
+        if (!sessionService.isLoggedIn(jwt) || !sessionService.hasRole(jwt, Rolle.GESCHAEFTSFUEHRER) || !sessionService.hasRole(jwt, Rolle.ADMIN)) {
             benutzer.setRolle(Rolle.KUNDE);
         }
         if (benutzer.getId() != null) {
@@ -72,7 +72,7 @@ public class BenutzerController {
             LOG.warn("Unauthorized attempt to fetch benutzer with id {}. User is not logged in.", id);
             return ResponseEntity.status(401).build();
         }
-        if (!id.equals(sessionService.getUserId(jwt))) {
+        if (!id.equals(sessionService.getUserId(jwt)) && !sessionService.hasRole(jwt, Rolle.ADMIN)) {
             LOG.warn("Benutzer with id {} attempted to fetch benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(jwt), id);
             return ResponseEntity.status(403).build();
         }
@@ -93,7 +93,7 @@ public class BenutzerController {
             LOG.warn("Unauthorized attempt to delete benutzer with id {}. User is not logged in.", id);
             return ResponseEntity.status(401).build();
         }
-        if (!id.equals(sessionService.getUserId(jwt))) {
+        if (!id.equals(sessionService.getUserId(jwt)) && !sessionService.hasRole(jwt, Rolle.ADMIN)) {
             LOG.warn("Benutzer with id {} attempted to delete benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(jwt), id);
             return ResponseEntity.status(403).build();
         }
@@ -113,7 +113,7 @@ public class BenutzerController {
             LOG.warn("Unauthorized attempt to update benutzer with id {}. User is not logged in.", id);
             return ResponseEntity.status(401).build();
         }
-        if (!id.equals(sessionService.getUserId(jwt))) {
+        if (!id.equals(sessionService.getUserId(jwt)) && !sessionService.hasRole(jwt, Rolle.ADMIN)) {
             LOG.warn("Benutzer with id {} attempted to update benutzer with id {} which does not match their own id. Ignoring request.", sessionService.getUserId(jwt), id);
             return ResponseEntity.status(403).build();
         }

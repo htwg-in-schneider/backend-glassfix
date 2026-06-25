@@ -121,7 +121,7 @@ public class AnfrageController {
     @PostMapping
     public ResponseEntity<Anfrage> createAnfrage(@RequestBody Anfrage anfrage, @AuthenticationPrincipal Jwt jwt) {
 
-        if (!sessionService.isLoggedIn(jwt) || !sessionService.hasRole(jwt, Rolle.KUNDE)) {
+        if (!sessionService.isLoggedIn(jwt) || (!sessionService.hasRole(jwt, Rolle.KUNDE) && !sessionService.hasRole(jwt, Rolle.ADMIN))) {
             LOG.warn("Unauthorized attempt to create anfrage. User is not logged in or does not have the required role.");
             return ResponseEntity.status(401).build();
         }
@@ -191,13 +191,13 @@ public class AnfrageController {
         Anfrage anfrageToUpdate = existingAnfrage.get();
 
         try {
-            if (sessionService.hasRole(jwt, Rolle.KUNDE)) {
+            if (sessionService.hasRole(jwt, Rolle.KUNDE) || sessionService.hasRole(jwt, Rolle.ADMIN)) {
                 // Kunden dürfen nur eigene Anfragen bearbeiten, und nur bestimmte Felder (Kategorie, Beschreibung, BildUrl, Fragen)
-                if (!anfrageToUpdate.getKunde().getId().equals(sessionService.getUserId(jwt))) {
+                if (!anfrageToUpdate.getKunde().getId().equals(sessionService.getUserId(jwt)) && !sessionService.hasRole(jwt, Rolle.ADMIN)) {
                     return ResponseEntity.status(403).build();
                 }
 
-                if(!anfrageToUpdate.getStatus().equals(AnfrageStatus.ERSTELLT)){
+                if(sessionService.hasRole(jwt, Rolle.KUNDE) && !anfrageToUpdate.getStatus().equals(AnfrageStatus.ERSTELLT)){
                     LOG.warn("Kunde with ID {} tried to update Anfrage, which is no longer available for updates.", sessionService.getUserId(jwt));
                     return ResponseEntity.status(403).build();
                 }
@@ -208,9 +208,9 @@ public class AnfrageController {
                 if (updatedAnfrage.getFragen() != null) anfrageToUpdate.setFragen(updatedAnfrage.getFragen());
             }
  
-            if (sessionService.hasRole(jwt, Rolle.FACHKRAFT)) {
+            if (sessionService.hasRole(jwt, Rolle.FACHKRAFT) || sessionService.hasRole(jwt, Rolle.ADMIN)) {
                 // Eigene Anfragen dürfen nur FACHKRAFT bearbeiten, und nur bestimmte Felder (Antwort)
-                    if (anfrageToUpdate.getExperte() != null && !anfrageToUpdate.getExperte().getId().equals(sessionService.getUserId(jwt))) {
+                    if (anfrageToUpdate.getExperte() != null && !anfrageToUpdate.getExperte().getId().equals(sessionService.getUserId(jwt)) && !sessionService.hasRole(jwt, Rolle.ADMIN)) {
                         return ResponseEntity.status(403).build();
                     }
                 if (updatedAnfrage.getAntwort() != null) {
